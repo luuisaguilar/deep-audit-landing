@@ -8,7 +8,7 @@ import {
   LogOut,
   Search,
   Database,
-  Github,
+  GitBranch,
   Globe,
   UtensilsCrossed,
   Rss,
@@ -40,7 +40,7 @@ const menuSections = [
     label: "Agentes de Ingesta",
     items: [
       { icon: Video, label: "YouTube", href: "/dashboard/youtube" },
-      { icon: Github, label: "GitHub", href: "/dashboard/github" },
+      { icon: GitBranch, label: "GitHub", href: "/dashboard/github" },
       { icon: Globe, label: "Web Scraper", href: "/dashboard/web" },
       { icon: UtensilsCrossed, label: "Chef IA", href: "/dashboard/chef" },
       { icon: Rss, label: "RSS Monitor", href: "/dashboard/rss" },

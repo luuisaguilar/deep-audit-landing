@@ -1,6 +1,6 @@
 "use client";
 import React, { useState } from "react";
-import { Github, CheckCircle2, AlertCircle, Loader2, History, BookOpen } from "lucide-react";
+import { GitBranch, CheckCircle2, AlertCircle, Loader2, History, BookOpen } from "lucide-react";
 
 export default function GithubPage() {
   const [url, setUrl] = useState("");
@@ -45,7 +45,7 @@ export default function GithubPage() {
             <label className="text-xs font-bold uppercase tracking-widest text-gray-500">URL del Repositorio</label>
             <div className="relative group">
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-500 group-focus-within:text-[#10b981] transition-colors">
-                <Github className="w-5 h-5" />
+                <GitBranch className="w-5 h-5" />
               </div>
               <input
                 type="url"
