@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { supabase } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
-import { Mail, Lock, User, ArrowRight, Github, Chrome, Database, Loader2 } from "lucide-react";
+import { Mail, Lock, User, ArrowRight, GitBranch, Globe, Database, Loader2 } from "lucide-react";
 import Link from "next/link";
 
 export default function AuthPage() {
@@ -143,10 +143,10 @@ export default function AuthPage() {
 
           <div className="grid grid-cols-2 gap-4">
             <button className="glass py-3 flex items-center justify-center gap-2 hover:bg-white/5 transition-all">
-              <Chrome className="w-4 h-4" /> <span className="text-xs font-bold">Google</span>
+              <Globe className="w-4 h-4" /> <span className="text-xs font-bold">Google</span>
             </button>
             <button className="glass py-3 flex items-center justify-center gap-2 hover:bg-white/5 transition-all">
-              <Github className="w-4 h-4" /> <span className="text-xs font-bold">GitHub</span>
+              <GitBranch className="w-4 h-4" /> <span className="text-xs font-bold">GitHub</span>
             </button>
           </div>
         </div>
