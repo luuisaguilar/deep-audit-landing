@@ -8,8 +8,8 @@ import {
   ShieldCheck, 
   ArrowRight, 
   CheckCircle2, 
-  Youtube, 
-  Globe, 
+  Video,
+  Globe,
   Search, 
   BookOpen 
 } from "lucide-react";
