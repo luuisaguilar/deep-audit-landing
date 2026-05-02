@@ -50,29 +50,23 @@
 - Fix encoding: caracteres espanoles corruptos Â¡/Ã¡ corregidos en todos los archivos
 - overflow-x-hidden en root div
 
+### Sprint 3 — Los datos son reales (Completo)
+
+**Objetivo**: Eliminar todo el mock data visible al usuario.
+
+- [x] Overview stats reales: COUNT ingestions, SUM tokens, DISTINCT source_types
+- [x] Overview "Actividad Reciente": ingestions ORDER BY processed_at LIMIT 3
+- [x] Historial real por agente: YouTube, GitHub, Web, Chef, Audio
+- [x] RSS feeds desde API real (GET /rss/feeds) con estado local
+- [x] RSS delete: POST /rss/remove-feed + actualizar lista
+- [x] Badge de plan desde user.user_metadata?.plan (en lugar de "PRO PLAN" fijo)
+- [x] Topbar search -> router.push('/dashboard/analytics?q=') al presionar Enter
+
 ---
 
 ## En curso
 
-### Sprint 3 — Los datos son reales (Siguiente)
-
-**Objetivo**: Eliminar todo el mock data visible al usuario.
-
-- [ ] Overview stats reales: COUNT ingestions, SUM tokens, DISTINCT source_types
-- [ ] Overview "Actividad Reciente": ingestions ORDER BY processed_at LIMIT 3
-- [ ] Historial real por agente: YouTube, GitHub, Web, Chef, Audio
-- [ ] RSS feeds desde API real (GET /rss/feeds) con estado local
-- [ ] RSS delete: POST /rss/remove-feed + actualizar lista
-- [ ] Badge de plan desde user.user_metadata?.plan (en lugar de "PRO PLAN" fijo)
-- [ ] Topbar search -> router.push('/dashboard/search?q=') al presionar Enter
-
-**Referencia**: El patron de carga ya funciona en `src/app/dashboard/analytics/page.tsx`.
-
----
-
-## Proximo
-
-### Sprint 4 — Limpieza
+### Sprint 4 — Limpieza (Siguiente)
 
 **Objetivo**: Eliminar comportamientos enganosos y codigo muerto.
 

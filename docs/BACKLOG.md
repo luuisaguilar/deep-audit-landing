@@ -37,7 +37,7 @@ Formato: `[ID] Descripcion — Archivo (si aplica)`
 
 ---
 
-## Sprint 3 — Los datos son reales (SIGUIENTE)
+## Sprint 3 — Los datos son reales (COMPLETO)
 
 | # | Mock data | Archivo | Fix |
 |---|---|---|---|
@@ -45,9 +45,9 @@ Formato: `[ID] Descripcion — Archivo (si aplica)`
 | S3-2 | "Actividad Reciente" — 3 items inventados | dashboard/page.tsx:79-83 | ingestions ORDER BY processed_at DESC LIMIT 3 |
 | S3-3 | YouTube historial — 3 items falsos | dashboard/youtube/page.tsx | ingestions WHERE source_type='youtube' LIMIT 10 |
 | S3-4 | MOCK_FEEDS en RSS | dashboard/rss/page.tsx:5-8 | GET /rss/feeds endpoint + useEffect |
-| S3-5 | Boton Trash de RSS sin handler | dashboard/rss/page.tsx | POST /rss/remove-feed + setFeeds(feeds.filter(...)) |
-| S3-6 | Badge "PRO PLAN" hardcodeado | DashboardLayout.tsx | user.user_metadata?.plan || "FREE" |
-| S3-7 | Topbar search sin funcionalidad | DashboardLayout.tsx | router.push('/dashboard/search?q='+query) al presionar Enter |
+| S3-5 | Boton Trash de RSS sin handler | dashboard/rss/page.tsx | Completo: POST /rss/remove-feed + setFeeds(feeds.filter(...)) |
+| S3-6 | Badge "PRO PLAN" hardcodeado | DashboardLayout.tsx | Completo: user_metadata?.plan?.toUpperCase() con fallback "FREE" |
+| S3-7 | Topbar search sin funcionalidad | DashboardLayout.tsx | Completo: router.push('/dashboard/analytics?q=') al presionar Enter |
 | S3-8 | GitHub historial — lista vacia estatica | dashboard/github/page.tsx | ingestions WHERE source_type='github' |
 | S3-9 | Web historial — placeholder estatico | dashboard/web/page.tsx | ingestions WHERE source_type='web' |
 | S3-10 | Chef historial — placeholder estatico | dashboard/chef/page.tsx | ingestions WHERE source_type='chef' |
@@ -64,7 +64,7 @@ const { data, error: err } = await query;
 
 ---
 
-## Sprint 4 — Limpieza
+## Sprint 4 — Limpieza (SIGUIENTE)
 
 | # | Issue | Archivo | Fix |
 |---|---|---|---|

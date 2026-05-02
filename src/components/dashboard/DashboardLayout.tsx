@@ -64,6 +64,8 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [userInitial, setUserInitial] = useState("U");
+  const [userPlan, setUserPlan] = useState("FREE");
+  const [searchQuery, setSearchQuery] = useState("");
 
   // Cerrar sidebar al cambiar de ruta en mobile
   useEffect(() => {
@@ -85,11 +87,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     return () => { document.body.style.overflow = ""; };
   }, [sidebarOpen]);
 
-  // Cargar inicial del usuario
+  // Cargar inicial y plan del usuario
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
-      const email = data.user?.email || data.user?.user_metadata?.full_name || "";
+      const user = data.user;
+      const email = user?.email || user?.user_metadata?.full_name || "";
       if (email) setUserInitial(email[0].toUpperCase());
+      const plan = user?.user_metadata?.plan;
+      if (plan) setUserPlan(plan.toUpperCase());
     });
   }, []);
 
@@ -213,6 +218,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <input
               type="text"
               placeholder="Search knowledge..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && searchQuery.trim()) {
+                  router.push("/dashboard/analytics?q=" + encodeURIComponent(searchQuery.trim()));
+                  setSearchQuery("");
+                }
+              }}
               className="w-full bg-white/5 border border-white/10 rounded-full py-2 pl-10 pr-4 text-sm focus:outline-none focus:border-[#10b981]/50 transition-all"
             />
           </div>
@@ -220,7 +233,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           {/* Right side */}
           <div className="flex items-center gap-3 ml-auto">
             <span className="hidden sm:block bg-[#10b981]/10 text-[#10b981] text-xs font-bold px-3 py-1.5 rounded-full border border-[#10b981]/20 whitespace-nowrap">
-              PRO PLAN
+              {userPlan}
             </span>
             <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-gradient-to-tr from-[#10b981] to-[#34d399] border-2 border-[#0e1117] shadow-lg shadow-[#10b981]/20 flex items-center justify-center font-bold text-[#0e1117] text-sm shrink-0">
               {userInitial}

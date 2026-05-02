@@ -70,6 +70,24 @@ export default function RssPage() {
     }
   };
 
+  const handleRemoveFeed = async (id: number | string) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const response = await fetch(`${apiUrl}/rss/remove-feed`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      if (!response.ok) throw new Error("Error al eliminar el feed");
+      setFeeds(feeds.filter((f) => f.id !== id));
+      setStatus("success");
+      setMessage("Feed eliminado correctamente.");
+    } catch (err: unknown) {
+      setStatus("error");
+      setMessage((err as Error).message || "No se pudo eliminar el feed.");
+    }
+  };
+
   const handleFetchAll = async () => {
     setFetching(true);
     try {
@@ -179,7 +197,11 @@ export default function RssPage() {
                   {feed.articles != null && (
                     <span className="text-xs text-gray-500">{feed.articles} articulos</span>
                   )}
-                  <button className="text-red-400/50 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
+                  <button
+                    onClick={() => handleRemoveFeed(feed.id)}
+                    className="text-red-400/50 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
+                    aria-label="Eliminar feed"
+                  >
                     <Trash2 className="w-4 h-4" />
                   </button>
                 </div>
