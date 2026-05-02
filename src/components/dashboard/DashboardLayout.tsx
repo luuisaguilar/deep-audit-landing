@@ -121,7 +121,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       <nav className="flex-1 px-3 py-2 space-y-4 overflow-y-auto">
         {menuSections.map((section) => (
           <div key={section.label}>
-            <p className="text-xs font-black uppercase tracking-widest text-gray-600 px-4 mb-1.5">
+            <p className="text-[10px] font-black uppercase tracking-widest text-gray-500 px-4 mb-1.5">
               {section.label}
             </p>
             <div className="space-y-0.5">
