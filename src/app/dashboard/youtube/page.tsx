@@ -1,4 +1,4 @@
-"use client";
+﻿﻿"use client";
 import React, { useState } from "react";
 import {
   Play,
@@ -26,7 +26,7 @@ export default function YoutubePage() {
     setStatus("idle");
     
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const response = await fetch(`${apiUrl}/analyze/youtube`, {
         method: "POST",
         headers: {

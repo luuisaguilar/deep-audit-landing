@@ -1,4 +1,4 @@
-"use client";
+﻿﻿"use client";
 import React, { useState } from "react";
 import { RefreshCw, CheckCircle2, AlertCircle, Loader2, FolderSync, FileText, Clock } from "lucide-react";
 
@@ -13,7 +13,7 @@ export default function SyncPage() {
     setStatus("idle");
     setSyncStats(null);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const response = await fetch(`${apiUrl}/sync/obsidian`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

@@ -1,4 +1,4 @@
-"use client";
+﻿﻿"use client";
 import React, { useState } from "react";
 import { GitBranch, CheckCircle2, AlertCircle, Loader2, History, BookOpen } from "lucide-react";
 
@@ -14,7 +14,7 @@ export default function GithubPage() {
     setLoading(true);
     setStatus("idle");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const response = await fetch(`${apiUrl}/analyze/github`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

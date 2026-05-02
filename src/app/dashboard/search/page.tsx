@@ -1,4 +1,4 @@
-"use client";
+﻿﻿"use client";
 import React, { useState } from "react";
 import { Search, Loader2, FileText, AlertCircle, Sparkles } from "lucide-react";
 
@@ -20,7 +20,7 @@ export default function SearchPage() {
     setResult(null);
     setError("");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const response = await fetch(`${apiUrl}/search/rag`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

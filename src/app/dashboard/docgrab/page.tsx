@@ -1,4 +1,4 @@
-"use client";
+﻿﻿"use client";
 import React, { useState, useEffect } from "react";
 import { 
   Globe, 
@@ -30,7 +30,7 @@ export default function DocGrabPage() {
     addLog(`Initiating connection to DeepAudit-Bridge...`);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const response = await fetch(`${apiUrl}/analyze/docgrab`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },

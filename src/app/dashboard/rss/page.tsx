@@ -1,4 +1,4 @@
-"use client";
+﻿﻿"use client";
 import React, { useState } from "react";
 import { Rss, CheckCircle2, AlertCircle, Loader2, Plus, Trash2, RefreshCw } from "lucide-react";
 
@@ -20,7 +20,7 @@ export default function RssPage() {
     setLoading(true);
     setStatus("idle");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const response = await fetch(`${apiUrl}/rss/add-feed`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -41,7 +41,7 @@ export default function RssPage() {
   const handleFetchAll = async () => {
     setFetching(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
       await fetch(`${apiUrl}/rss/fetch-all`, { method: "POST" });
       setStatus("success");
       setMessage("Artículos nuevos procesados y guardados en el Vault.");
