@@ -15,6 +15,19 @@ export default function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [resetSent, setResetSent] = useState(false);
+
+  const handleForgotPassword = async () => {
+    if (!email) { setError("Escribe tu email primero."); return; }
+    setLoading(true);
+    setError(null);
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/auth/reset`,
+    });
+    setLoading(false);
+    if (error) setError(error.message);
+    else setResetSent(true);
+  };
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -100,7 +113,7 @@ export default function AuthPage() {
             <div className="space-y-2">
               <div className="flex justify-between items-center ml-1">
                 <label className="text-xs font-bold uppercase tracking-widest text-gray-500">Contraseña</label>
-                {isLogin && <button type="button" className="text-[10px] text-[#10b981] hover:underline">¿Olvidaste tu contraseña?</button>}
+                {isLogin && <button type="button" onClick={handleForgotPassword} className="text-[10px] text-[#10b981] hover:underline">¿Olvidaste tu contraseña?</button>}
               </div>
               <div className="relative">
                 <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-500" />
@@ -115,6 +128,11 @@ export default function AuthPage() {
               </div>
             </div>
 
+            {resetSent && (
+              <div className="p-3 bg-[#10b981]/10 border border-[#10b981]/20 rounded-xl text-[#10b981] text-xs text-center">
+                Revisa tu email — te enviamos un link para resetear tu contraseña.
+              </div>
+            )}
             {error && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-xs text-center">
                 {error}
