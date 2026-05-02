@@ -1,36 +1,40 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🌌 Deep Audit Knowledge Engine
 
-## Getting Started
+### Version 2.0: Emerald Edition
 
-First, run the development server:
+Deep Audit es un ecosistema semántico autónomo diseñado para transformar el caos de información en inteligencia ejecutable almacenada en un Vault de Obsidian.
 
+## 🚀 Vision
+Establecer una "Segunda Memoria" corporativa que entiende las conexiones entre videos, documentación y código mediante grafos de conocimiento 3D y agentes de IA.
+
+## 🛠️ Stack Tecnológico
+- **Frontend**: Next.js 15 (App Router), React 19, Tailwind v4.
+- **Visualización**: Three.js + React Three Fiber (Galaxy & Knowledge Graph).
+- **Seguridad**: Supabase Auth + Middleware Guard.
+- **Backend Bridge**: FastAPI (Python) para orquestación de agentes.
+- **Realtime**: Supabase Realtime (Sincronización Vault-to-Web).
+
+## 📁 Componentes de la Arquitectura
+1.  **Frontend (`/src`)**: Landing page premium y Dashboard operativo.
+2.  **API Bridge (`/scripts/api_bridge.py`)**: Interfaz entre el Dashboard y tus scripts de Python.
+3.  **Vault Sync (`/scripts/vault_sync.py`)**: Watcher para sincronizar Obsidian con el mapa 3D.
+4.  **Supabase (`/supabase`)**: Esquema de nodos y conexiones de conocimiento.
+
+## 🏁 Inicio Rápido
+
+### 1. Configuración Web
 ```bash
+npm install
+# Configurar .env.local con credenciales de Supabase y URL de la API
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configuración de Agentes (Servidor Proxmox)
+```bash
+pip install fastapi uvicorn supabase watchdog
+python scripts/api_bridge.py
+python scripts/vault_sync.py
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+---
+*Desarrollado por Luis & Antigravity AI.*
