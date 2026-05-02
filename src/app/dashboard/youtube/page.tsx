@@ -1,15 +1,16 @@
 "use client";
 import React, { useState } from "react";
-import { 
-  Play, 
-  Search, 
-  History, 
-  CheckCircle2, 
-  Clock, 
+import {
+  Play,
+  Search,
+  History,
+  CheckCircle2,
+  Clock,
   AlertCircle,
   Loader2,
   Video
 } from "lucide-react";
+import Link from "next/link";
 
 export default function YoutubePage() {
   const [url, setUrl] = useState("");
@@ -109,7 +110,7 @@ export default function YoutubePage() {
             <History className="w-5 h-5 text-gray-400" />
             <h3 className="font-bold text-lg">Historial de Auditoría</h3>
           </div>
-          <button className="text-xs text-[#10b981] font-bold hover:underline">Ver todo</button>
+          <Link href="/dashboard/analytics" className="text-xs text-[#10b981] font-bold hover:underline">Ver todo</Link>
         </div>
         <div className="divide-y divide-white/5">
           {[

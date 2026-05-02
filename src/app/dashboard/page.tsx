@@ -71,7 +71,10 @@ export default function DashboardPage() {
       {/* Recent Activity & Map Placeholder */}
       <div className="grid lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 glass p-8">
-          <h2 className="text-xl font-bold mb-6">Actividad Reciente</h2>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold">Actividad Reciente</h2>
+            <a href="/dashboard/analytics" className="text-xs text-[#10b981] font-bold hover:underline">Ver todo</a>
+          </div>
           <div className="space-y-6">
             {[
               { type: "Video", name: "Modern Web Architecture 2026", status: "Completed", time: "Hace 10 min" },

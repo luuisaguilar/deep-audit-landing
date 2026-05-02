@@ -69,10 +69,10 @@ export default function LandingPage() {
         </p>
 
         <div className="flex flex-col sm:flex-row gap-4">
-          <button className="btn-emerald flex items-center gap-2">
+          <Link href="/auth" className="btn-emerald flex items-center gap-2">
             Empezar ahora <ArrowRight className="w-4 h-4" />
-          </button>
-          <button className="btn-outline-emerald">Ver demo interactiva</button>
+          </Link>
+          <Link href="#beneficios" className="btn-outline-emerald">Ver demo interactiva</Link>
         </div>
 
         {/* Stats Section */}
@@ -155,7 +155,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#10b981]" /> 100k tokens procesados</li>
                 <li className="flex items-center gap-2 opacity-50"><CheckCircle2 className="w-4 h-4" /> DocGrab recursivo</li>
               </ul>
-              <button className="w-full btn-outline-emerald text-sm">Empezar gratis</button>
+              <Link href="/auth" className="w-full btn-outline-emerald text-sm text-center block">Empezar gratis</Link>
             </div>
 
             {/* Strategist */}
@@ -169,7 +169,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#10b981]" /> Supabase Auth Integration</li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#10b981]" /> Soporte prioritario</li>
               </ul>
-              <button className="w-full btn-emerald text-sm">Suscribirse ahora</button>
+              <Link href="/auth" className="w-full btn-emerald text-sm text-center block">Suscribirse ahora</Link>
             </div>
 
             {/* Overlord */}
@@ -182,7 +182,7 @@ export default function LandingPage() {
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#10b981]" /> Personalización total</li>
                 <li className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-[#10b981]" /> Cloudflare Tunnel Setup</li>
               </ul>
-              <button className="w-full btn-outline-emerald text-sm">Contactar ventas</button>
+              <a href="mailto:luisaguilaraguila@gmail.com" className="w-full btn-outline-emerald text-sm text-center block">Contactar ventas</a>
             </div>
           </div>
         </div>
