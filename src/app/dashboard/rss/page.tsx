@@ -1,11 +1,21 @@
-﻿﻿"use client";
-import React, { useState } from "react";
-import { Rss, CheckCircle2, AlertCircle, Loader2, Plus, Trash2, RefreshCw } from "lucide-react";
+"use client";
+import React, { useState, useEffect } from "react";
+import {
+  Rss,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  Plus,
+  Trash2,
+  RefreshCw,
+} from "lucide-react";
 
-const MOCK_FEEDS = [
-  { id: 1, url: "https://hnrss.org/frontpage", name: "Hacker News", articles: 24 },
-  { id: 2, url: "https://feeds.feedburner.com/TechCrunch", name: "TechCrunch", articles: 12 },
-];
+interface Feed {
+  id: number | string;
+  url: string;
+  name: string;
+  articles?: number;
+}
 
 export default function RssPage() {
   const [url, setUrl] = useState("");
@@ -13,6 +23,27 @@ export default function RssPage() {
   const [fetching, setFetching] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [feeds, setFeeds] = useState<Feed[]>([]);
+  const [feedsLoading, setFeedsLoading] = useState(true);
+
+  useEffect(() => {
+    loadFeeds();
+  }, []);
+
+  const loadFeeds = async () => {
+    setFeedsLoading(true);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const response = await fetch(`${apiUrl}/rss/feeds`);
+      if (!response.ok) throw new Error("no feeds");
+      const data = await response.json();
+      setFeeds(data || []);
+    } catch {
+      setFeeds([]);
+    } finally {
+      setFeedsLoading(false);
+    }
+  };
 
   const handleAddFeed = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,11 +59,12 @@ export default function RssPage() {
       });
       if (!response.ok) throw new Error("Error al agregar el feed");
       setStatus("success");
-      setMessage("¡Feed agregado correctamente!");
+      setMessage("Feed agregado correctamente!");
       setUrl("");
-    } catch (err: any) {
+      loadFeeds();
+    } catch (err: unknown) {
       setStatus("error");
-      setMessage(err.message || "No se pudo contactar con el Agente Python.");
+      setMessage((err as Error).message || "No se pudo contactar con el Agente Python.");
     } finally {
       setLoading(false);
     }
@@ -44,7 +76,7 @@ export default function RssPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
       await fetch(`${apiUrl}/rss/fetch-all`, { method: "POST" });
       setStatus("success");
-      setMessage("Artículos nuevos procesados y guardados en el Vault.");
+      setMessage("Articulos nuevos procesados y guardados en el Vault.");
     } catch {
       setStatus("error");
       setMessage("Error al procesar los feeds.");
@@ -57,8 +89,12 @@ export default function RssPage() {
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div className="flex justify-between items-end">
         <div>
-          <h1 className="text-3xl font-bold">RSS <span className="emerald-text-gradient">Monitor</span></h1>
-          <p className="text-gray-500 mt-1">Suscríbete a feeds RSS y procesa automáticamente los artículos nuevos.</p>
+          <h1 className="text-3xl font-bold">
+            RSS <span className="emerald-text-gradient">Monitor</span>
+          </h1>
+          <p className="text-gray-500 mt-1">
+            Suscribete a feeds RSS y procesa automaticamente los articulos nuevos.
+          </p>
         </div>
         <button
           onClick={handleFetchAll}
@@ -71,12 +107,18 @@ export default function RssPage() {
       </div>
 
       {status !== "idle" && (
-        <div className={`p-4 rounded-xl text-sm flex items-center gap-3 ${
-          status === "success"
-            ? "bg-[#10b981]/10 border border-[#10b981]/20 text-[#10b981]"
-            : "bg-red-500/10 border border-red-500/20 text-red-400"
-        }`}>
-          {status === "success" ? <CheckCircle2 className="w-5 h-5 shrink-0" /> : <AlertCircle className="w-5 h-5 shrink-0" />}
+        <div
+          className={`p-4 rounded-xl text-sm flex items-center gap-3 ${
+            status === "success"
+              ? "bg-[#10b981]/10 border border-[#10b981]/20 text-[#10b981]"
+              : "bg-red-500/10 border border-red-500/20 text-red-400"
+          }`}
+        >
+          {status === "success" ? (
+            <CheckCircle2 className="w-5 h-5 shrink-0" />
+          ) : (
+            <AlertCircle className="w-5 h-5 shrink-0" />
+          )}
           {message}
         </div>
       )}
@@ -109,27 +151,42 @@ export default function RssPage() {
         <div className="p-6 border-b border-white/5">
           <h3 className="font-bold text-lg">Feeds Activos</h3>
         </div>
-        <div className="divide-y divide-white/5">
-          {MOCK_FEEDS.map((feed) => (
-            <div key={feed.id} className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors group">
-              <div className="flex items-center gap-4">
-                <div className="w-10 h-10 bg-[#10b981]/10 rounded-lg flex items-center justify-center">
-                  <Rss className="w-4 h-4 text-[#10b981]" />
+        {feedsLoading ? (
+          <div className="p-8 flex justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-[#10b981]" />
+          </div>
+        ) : feeds.length === 0 ? (
+          <div className="p-8 text-center text-gray-600 text-sm">
+            No hay feeds configurados. Agrega uno arriba para empezar.
+          </div>
+        ) : (
+          <div className="divide-y divide-white/5">
+            {feeds.map((feed) => (
+              <div
+                key={feed.id}
+                className="p-4 flex items-center justify-between hover:bg-white/5 transition-colors group"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-[#10b981]/10 rounded-lg flex items-center justify-center">
+                    <Rss className="w-4 h-4 text-[#10b981]" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold">{feed.name || feed.url}</div>
+                    <div className="text-[10px] text-gray-500 font-mono">{feed.url}</div>
+                  </div>
                 </div>
-                <div>
-                  <div className="text-sm font-bold">{feed.name}</div>
-                  <div className="text-[10px] text-gray-500 font-mono">{feed.url}</div>
+                <div className="flex items-center gap-4">
+                  {feed.articles != null && (
+                    <span className="text-xs text-gray-500">{feed.articles} articulos</span>
+                  )}
+                  <button className="text-red-400/50 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-              <div className="flex items-center gap-4">
-                <span className="text-xs text-gray-500">{feed.articles} artículos</span>
-                <button className="text-red-400/50 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100">
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

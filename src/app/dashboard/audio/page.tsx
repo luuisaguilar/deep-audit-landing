@@ -1,13 +1,55 @@
-﻿﻿"use client";
-import React, { useState, useRef } from "react";
-import { Mic, Upload, CheckCircle2, AlertCircle, Loader2, History, FileAudio } from "lucide-react";
+"use client";
+import React, { useState, useEffect, useRef } from "react";
+import {
+  Mic,
+  Upload,
+  CheckCircle2,
+  AlertCircle,
+  Loader2,
+  History,
+  FileAudio,
+} from "lucide-react";
+import Link from "next/link";
+import { supabase } from "@/lib/supabase";
+
+interface Ingestion {
+  id: number;
+  title: string;
+  source_url: string;
+  status: string;
+  processed_at: string;
+}
 
 export default function AudioPage() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
+  const [history, setHistory] = useState<Ingestion[]>([]);
+  const [histLoading, setHistLoading] = useState(true);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    loadHistory();
+  }, []);
+
+  const loadHistory = async () => {
+    setHistLoading(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      let query = supabase
+        .from("ingestions")
+        .select("id, title, source_url, status, processed_at")
+        .eq("source_type", "audio")
+        .order("processed_at", { ascending: false })
+        .limit(10);
+      if (user) query = query.eq("user_id", user.id);
+      const { data } = await query;
+      setHistory((data || []) as Ingestion[]);
+    } finally {
+      setHistLoading(false);
+    }
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files?.[0]) setFile(e.target.files[0]);
@@ -16,7 +58,12 @@ export default function AudioPage() {
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const dropped = e.dataTransfer.files[0];
-    if (dropped && (dropped.type.startsWith("audio/") || dropped.name.endsWith(".mp3") || dropped.name.endsWith(".wav"))) {
+    if (
+      dropped &&
+      (dropped.type.startsWith("audio/") ||
+        dropped.name.endsWith(".mp3") ||
+        dropped.name.endsWith(".wav"))
+    ) {
       setFile(dropped);
     }
   };
@@ -30,18 +77,18 @@ export default function AudioPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const formData = new FormData();
       formData.append("file", file);
-
       const response = await fetch(`${apiUrl}/analyze/audio`, {
         method: "POST",
         body: formData,
       });
       if (!response.ok) throw new Error("Error procesando el audio");
       setStatus("success");
-      setMessage(`¡Audio "${file.name}" encolado! El agente está transcribiendo y analizando.`);
+      setMessage(`Audio "${file.name}" encolado! El agente esta transcribiendo y analizando.`);
       setFile(null);
-    } catch (err: any) {
+      loadHistory();
+    } catch (err: unknown) {
       setStatus("error");
-      setMessage(err.message || "No se pudo contactar con el Agente Python.");
+      setMessage((err as Error).message || "No se pudo contactar con el Agente Python.");
     } finally {
       setLoading(false);
     }
@@ -50,8 +97,12 @@ export default function AudioPage() {
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div>
-        <h1 className="text-3xl font-bold">Audio <span className="emerald-text-gradient">Analyzer</span></h1>
-        <p className="text-gray-500 mt-1">Transcribe y analiza podcasts, entrevistas o cualquier archivo de audio.</p>
+        <h1 className="text-3xl font-bold">
+          Audio <span className="emerald-text-gradient">Analyzer</span>
+        </h1>
+        <p className="text-gray-500 mt-1">
+          Transcribe y analiza podcasts, entrevistas o cualquier archivo de audio.
+        </p>
       </div>
 
       <div className="glass p-8">
@@ -89,8 +140,12 @@ export default function AudioPage() {
             disabled={loading || !file}
             className="btn-emerald w-full py-4 flex items-center justify-center gap-2 disabled:opacity-50"
           >
-            {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : (
-              <><Mic className="w-4 h-4" /> Analizar Audio</>
+            {loading ? (
+              <Loader2 className="w-5 h-5 animate-spin" />
+            ) : (
+              <>
+                <Mic className="w-4 h-4" /> Analizar Audio
+              </>
             )}
           </button>
 
@@ -108,13 +163,58 @@ export default function AudioPage() {
       </div>
 
       <div className="glass overflow-hidden">
-        <div className="p-6 border-b border-white/5 flex items-center gap-2">
-          <History className="w-5 h-5 text-gray-400" />
-          <h3 className="font-bold text-lg">Audios Procesados</h3>
+        <div className="p-6 border-b border-white/5 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <History className="w-5 h-5 text-gray-400" />
+            <h3 className="font-bold text-lg">Audios Procesados</h3>
+          </div>
+          <Link href="/dashboard/analytics" className="text-xs text-[#10b981] font-bold hover:underline">
+            Ver todo
+          </Link>
         </div>
-        <div className="p-6 text-center text-gray-600 text-sm">
-          Los audios analizados aparecerán aquí.
-        </div>
+        {histLoading ? (
+          <div className="p-8 flex justify-center">
+            <Loader2 className="w-6 h-6 animate-spin text-[#10b981]" />
+          </div>
+        ) : history.length === 0 ? (
+          <div className="p-6 text-center text-gray-600 text-sm">
+            Los audios analizados apareceran aqui.
+          </div>
+        ) : (
+          <div className="divide-y divide-white/5">
+            {history.map((item) => (
+              <div
+                key={item.id}
+                className="p-4 hover:bg-white/5 transition-colors flex items-center justify-between group cursor-pointer"
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-10 h-10 bg-white/5 rounded-lg flex items-center justify-center group-hover:bg-[#10b981]/10 transition-colors">
+                    <FileAudio className="w-4 h-4 text-gray-400 group-hover:text-[#10b981]" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-bold truncate max-w-xs">
+                      {item.title || item.source_url}
+                    </div>
+                    <div className="text-[10px] text-gray-500 uppercase font-black">
+                      {item.processed_at
+                        ? new Date(item.processed_at).toLocaleDateString("es-MX")
+                        : ""}
+                    </div>
+                  </div>
+                </div>
+                <div
+                  className={`text-[10px] px-3 py-1 rounded-full font-bold uppercase ${
+                    item.status === "success"
+                      ? "bg-[#10b981]/10 text-[#10b981]"
+                      : "bg-red-500/10 text-red-400"
+                  }`}
+                >
+                  {item.status}
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

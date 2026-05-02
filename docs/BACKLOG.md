@@ -1,37 +1,66 @@
 # Backlog — Deep Audit Knowledge Engine
 
-**Última actualización: 2 de Mayo 2026**
+**Ultima actualizacion: 2 de Mayo 2026**
 
-Formato: `[Severidad] Descripción — Archivo:línea (si aplica)`
-
----
-
-## Sprint 2 — Mobile no está roto
-
-| # | Issue | Archivo | Fix |
-|---|---|---|---|
-| S2-1 | Sidebar sin colapso en mobile — cubre el 68% del viewport en 375px | `DashboardLayout.tsx` | `hidden lg:flex` en aside + hamburger button + drawer con `useState` |
-| S2-2 | Landing navbar sin hamburger menu en mobile | `src/app/page.tsx` | `hidden md:flex` en nav links + botón hamburger |
-| S2-3 | Touch targets < 44px en sidebar items (`py-2.5` ≈ 38px) | `DashboardLayout.tsx` | Cambiar a `py-3` o añadir `min-h-[44px]` |
-| S2-4 | Labels de sección del sidebar `text-[9px]` — ilegibles | `DashboardLayout.tsx` | Cambiar a `text-xs` (12px) |
-| S2-5 | `text-[10px]` y `text-[11px]` en múltiples componentes | Global | Find/replace → `text-xs` mínimo |
-| S2-6 | Posible scroll horizontal en landing a 375px | `src/app/page.tsx` | `overflow-x: hidden` en `main` |
+Formato: `[ID] Descripcion — Archivo (si aplica)`
 
 ---
 
-## Sprint 3 — Los datos son reales
+## Sprint 1 — Nada engana al usuario (COMPLETO)
 
-| # | Mock data | Archivo:línea | Reemplazar con |
+| # | Issue | Archivo | Estado |
 |---|---|---|---|
-| S3-1 | Stats grid ("12,450", "458h", "1.2M", "3") | `dashboard/page.tsx:26-29` | Query `SELECT COUNT(*), SUM(prompt_tokens+completion_tokens) FROM ingestions` |
-| S3-2 | "Actividad Reciente" — 3 items inventados | `dashboard/page.tsx:76-79` | `ingestions ORDER BY processed_at DESC LIMIT 3` |
-| S3-3 | YouTube historial — 3 items falsos | `dashboard/youtube/page.tsx:115-119` | `ingestions WHERE source_type='youtube' LIMIT 5` |
-| S3-4 | `MOCK_FEEDS` en RSS | `dashboard/rss/page.tsx:5-8` | Crear endpoint `GET /rss/feeds` y llamarlo en `useEffect` |
-| S3-5 | Botón Trash de RSS sin handler | `dashboard/rss/page.tsx` | `POST /rss/remove-feed` + `setFeeds(feeds.filter(...))` |
-| S3-6 | Avatar de usuario = div de colores | `DashboardLayout.tsx:101` | `supabase.auth.getUser()` → mostrar inicial del email |
-| S3-7 | Badge "PRO PLAN" hardcodeado | `DashboardLayout.tsx:99` | `user.user_metadata?.plan \|\| 'FREE'` |
-| S3-8 | Topbar search sin funcionalidad | `DashboardLayout.tsx` | `router.push('/dashboard/search?q='+query)` al presionar Enter |
-| S3-9 | Stats landing page (1250 videos, 50M tokens...) | `src/app/page.tsx:81-84` | Supabase `ingestions` count agregado, o dejar como marketing copy (decisión de negocio) |
+| S1-1 | CTAs landing sin href | src/app/page.tsx | Completo |
+| S1-2 | "Ver demo" no hacia nada | src/app/page.tsx | Completo |
+| S1-3 | OAuth buttons sin handler | src/app/auth/page.tsx | Completo |
+| S1-4 | Reset password sin pagina destino | — | Completo: /auth/reset creada |
+| S1-5 | Form no se oculta al enviar forgot password | src/app/auth/page.tsx | Completo: resetSent state |
+| S1-6 | Signup sin confirmacion si no hay sesion | src/app/auth/page.tsx | Completo: signupConfirm state |
+| S1-7 | "Ver todo" en YouTube no enlazaba a analytics | dashboard/youtube/page.tsx | Completo |
+
+---
+
+## Sprint 2 — Mobile no esta roto (COMPLETO)
+
+| # | Issue | Archivo | Estado |
+|---|---|---|---|
+| S2-1 | Sidebar sin colapso en mobile | DashboardLayout.tsx | Completo: drawer + hamburger |
+| S2-2 | Touch targets < 44px en sidebar | DashboardLayout.tsx | Completo: min-h-[44px] en todos |
+| S2-3 | Labels de seccion text-[9px] ilegibles | DashboardLayout.tsx | Completo: text-xs |
+| S2-4 | Labels de seccion text-gray-600 (bajo contraste) | DashboardLayout.tsx | Completo: text-gray-500 |
+| S2-5 | API URL fallback a localhost en produccion | 10 paginas de dashboard | Completo: fallback "" |
+| S2-6 | Caracteres espanoles corruptos (Â¡/Ã¡) | 10 paginas de dashboard | Completo |
+| S2-7 | Curly quotes U+201C/201D en audio/page.tsx | dashboard/audio/page.tsx | Completo |
+| S2-8 | Avatar sin inicial del usuario | DashboardLayout.tsx | Completo: supabase.auth.getUser() |
+| S2-9 | Body scroll cuando sidebar abierto en mobile | DashboardLayout.tsx | Completo |
+| S2-10 | Escape key no cerraba sidebar | DashboardLayout.tsx | Completo |
+
+---
+
+## Sprint 3 — Los datos son reales (SIGUIENTE)
+
+| # | Mock data | Archivo | Fix |
+|---|---|---|---|
+| S3-1 | Stats grid hardcodeados ("12,450", "458h", "1.2M", "3") | dashboard/page.tsx:26-29 | SELECT COUNT(*), SUM(prompt_tokens+completion_tokens), COUNT(DISTINCT source_type) FROM ingestions |
+| S3-2 | "Actividad Reciente" — 3 items inventados | dashboard/page.tsx:79-83 | ingestions ORDER BY processed_at DESC LIMIT 3 |
+| S3-3 | YouTube historial — 3 items falsos | dashboard/youtube/page.tsx | ingestions WHERE source_type='youtube' LIMIT 10 |
+| S3-4 | MOCK_FEEDS en RSS | dashboard/rss/page.tsx:5-8 | GET /rss/feeds endpoint + useEffect |
+| S3-5 | Boton Trash de RSS sin handler | dashboard/rss/page.tsx | POST /rss/remove-feed + setFeeds(feeds.filter(...)) |
+| S3-6 | Badge "PRO PLAN" hardcodeado | DashboardLayout.tsx | user.user_metadata?.plan || "FREE" |
+| S3-7 | Topbar search sin funcionalidad | DashboardLayout.tsx | router.push('/dashboard/search?q='+query) al presionar Enter |
+| S3-8 | GitHub historial — lista vacia estatica | dashboard/github/page.tsx | ingestions WHERE source_type='github' |
+| S3-9 | Web historial — placeholder estatico | dashboard/web/page.tsx | ingestions WHERE source_type='web' |
+| S3-10 | Chef historial — placeholder estatico | dashboard/chef/page.tsx | ingestions WHERE source_type='chef' |
+| S3-11 | Audio historial — placeholder estatico | dashboard/audio/page.tsx | ingestions WHERE source_type='audio' |
+
+**Patron de referencia** (ya implementado en analytics/page.tsx):
+```ts
+const { data: { user } } = await supabase.auth.getUser();
+let query = supabase.from("ingestions").select("*")
+  .order("processed_at", { ascending: false }).limit(50);
+if (user) query = query.eq("user_id", user.id);
+const { data, error: err } = await query;
+```
 
 ---
 
@@ -39,16 +68,16 @@ Formato: `[Severidad] Descripción — Archivo:línea (si aplica)`
 
 | # | Issue | Archivo | Fix |
 |---|---|---|---|
-| S4-1 | `simulateLogs()` genera logs falsos en DocGrab | `dashboard/docgrab/page.tsx:55-69` | Eliminar función. Mostrar "Tarea encolada — procesando en segundo plano" |
-| S4-2 | "Páginas detectadas: 142" hardcodeado en DocGrab | `dashboard/docgrab/page.tsx:136` | Eliminar widget hasta que el backend devuelva el dato real |
-| S4-3 | Select "Profundidad" en DocGrab no afecta el request | `dashboard/docgrab/page.tsx` | Añadir `depth` al body del fetch + actualizar endpoint de la API |
-| S4-4 | `/dashboard/vault` huérfana (no en sidebar) | `dashboard/vault/page.tsx` | Añadir `export { redirect } from 'next/navigation'` y redirigir a `/dashboard/sync` |
-| S4-5 | Botón "Sincronizar Ahora" en vault sin `onClick` | `dashboard/vault/page.tsx:15` | Si se mantiene la página, conectar al handler del sync |
-| S4-6 | Focus states ausentes en todos los interactivos | `globals.css` | Añadir regla `*:focus-visible { outline: 2px solid #10b981; outline-offset: 2px; }` |
-| S4-7 | `fn cn()` duplicada en dashboard/page.tsx | `dashboard/page.tsx:120` | Importar desde `@/lib/utils` o crear el archivo |
-| S4-8 | Empty states sin ilustración ni CTA | GitHub, Web, Chef, Audio, NotebookLM | Crear componente `<EmptyState icon= title= description= href= />` |
-| S4-9 | "Settings" en sidebar sin acción | `DashboardLayout.tsx` | Crear `/dashboard/settings/page.tsx` o añadir `href` |
-| S4-10 | Stats de `/sync/obsidian` siempre retornan 0 | `api.py` — endpoint `/sync/obsidian` | Hacer que `sync_all_to_obsidian()` retorne el conteo real |
+| S4-1 | simulateLogs() genera logs falsos en DocGrab | dashboard/docgrab/page.tsx:55-69 | Eliminar. Mostrar "Tarea encolada — procesando en segundo plano" |
+| S4-2 | "Paginas detectadas: 142" hardcodeado | dashboard/docgrab/page.tsx:136 | Eliminar widget hasta que backend retorne el dato |
+| S4-3 | Select "Profundidad" no afecta el request | dashboard/docgrab/page.tsx | Agregar depth al body del fetch + actualizar endpoint API |
+| S4-4 | /dashboard/vault huerfana (no en sidebar) | dashboard/vault/page.tsx | redirect('/dashboard/sync') |
+| S4-5 | Landing navbar sin hamburger en mobile | src/app/page.tsx | hidden md:flex en nav links + boton hamburger |
+| S4-6 | Componente EmptyState ausente | multiple paginas | Crear src/components/EmptyState.tsx reutilizable |
+| S4-7 | fn cn() duplicada en dashboard/page.tsx | dashboard/page.tsx:120 | Importar desde @/lib/utils |
+| S4-8 | "Settings" en sidebar sin destino | DashboardLayout.tsx | Crear /dashboard/settings/page.tsx o deshabilitar |
+| S4-9 | Stats de /sync/obsidian siempre 0 | api.py — /sync/obsidian | sync_all_to_obsidian() debe retornar conteo real |
+| S4-10 | overflow-x en landing a 375px | src/app/page.tsx | overflow-x: hidden en main |
 
 ---
 
@@ -56,15 +85,18 @@ Formato: `[Severidad] Descripción — Archivo:línea (si aplica)`
 
 | # | Feature | Prioridad |
 |---|---|---|
-| L-1 | CI/CD: GitHub Actions → SSH → git pull + rebuild automático | Alta |
-| L-2 | Historial real por agente (cada página muestra sus ingestas) | Alta |
-| L-3 | Notificaciones realtime cuando un agente termina | Media |
-| L-4 | Settings page (`/dashboard/settings`) | Media |
+| L-1 | CI/CD: GitHub Actions -> SSH -> git pull + rebuild automatico | Alta |
+| L-2 | Notificaciones realtime cuando un agente termina (Supabase Realtime o SSE) | Media |
+| L-3 | Streaming de logs via SSE desde FastAPI (reemplaza simulateLogs) | Media |
+| L-4 | Settings page (/dashboard/settings): cambiar nombre, email, password, plan | Media |
 | L-5 | Daily Briefing via n8n + Telegram | Media |
-| L-6 | Deep Sync con Syncthing | Media |
-| L-7 | Knowledge Map 3D con datos reales de `document_chunks` | Media |
-| L-8 | Streaming de logs via SSE (reemplaza simulateLogs) | Media |
+| L-6 | Deep Sync con Syncthing bidireccional | Media |
+| L-7 | Knowledge Map 3D con datos reales de document_chunks | Media |
+| L-8 | Topbar search con dropdown de resultados RAG inline | Media |
 | L-9 | Monitoreo con Uptime Kuma | Baja |
-| L-10 | PDF Ingestor directo desde el dashboard | Baja |
+| L-10 | PDF Ingestor directo desde dashboard | Baja |
 | L-11 | Telegram Bot para ingesta desde conversaciones | Baja |
-| L-12 | Backup automático semanal de Supabase | Baja |
+| L-12 | Backup automatico semanal de Supabase | Baja |
+| L-13 | Podcast auto-ingestion desde feeds RSS de audio | Baja |
+| L-14 | PATH permanente en LXC (/usr/local/bin en .bashrc) | Baja |
+| L-15 | OAuth providers configurados en Supabase Dashboard | Configuracion puntual |

@@ -1,6 +1,6 @@
 # Runbook Operativo — Deep Audit Knowledge Engine
 
-**Última actualización: 2 de Mayo 2026**
+**Ultima actualizacion: 2 de Mayo 2026**
 
 ---
 
@@ -9,141 +9,136 @@
 | Item | Valor |
 |---|---|
 | Host | Proxmox PVE |
-| LXC | 126 — `app-knowledge` |
-| IP LXC | (ver Proxmox dashboard) |
-| Dominio público | `knowledge.luisaguilaraguila.com` |
+| LXC | 126 — app-knowledge |
+| Dominio publico | knowledge.luisaguilaraguila.com |
 | Tunnel | Cloudflare Zero Trust (dashboard-managed) |
-| OS del LXC | Debian/Ubuntu |
-| Docker Compose | `/opt/deep-audit-knowledge-engine/docker-compose.yml` |
+| Docker Compose | /opt/deep-audit-knowledge-engine/docker-compose.yml |
+| docker-compose bin | /usr/local/bin/docker-compose (NO esta en PATH por defecto) |
+
+---
 
 ## Contenedores Docker
 
-| Nombre | Imagen | Función | Puerto interno |
+| Nombre | Imagen base | Funcion | Puerto interno |
 |---|---|---|---|
-| `knowledge-landing` | Next.js 15 build | Frontend + Dashboard | 3000 |
-| `knowledge-engine-app` | Python/Streamlit | Admin UI (poder usuario) | 8501 |
-| `knowledge-engine-api` | Python/FastAPI | Backend REST para agentes | 8000 |
-| `knowledge-nginx` | nginx:alpine | Reverse proxy + routing | 80 (expuesto) |
-| `knowledge-engine-tunnel` | cloudflare/cloudflared | Túnel al exterior | — |
+| knowledge-landing | Next.js 16.2.4 build | Frontend + Dashboard | 3000 |
+| knowledge-engine-app | Python/Streamlit | Admin UI | 8501 |
+| knowledge-engine-api | Python/FastAPI | Backend REST | 8000 |
+| knowledge-nginx | nginx:alpine | Reverse proxy | 80 (expuesto) |
+| knowledge-engine-tunnel | cloudflare/cloudflared | Tunel exterior | — |
 
-## Paths importantes en el LXC
+### Routing de Nginx
 
 ```
-/opt/deep-audit-knowledge-engine/    ← repo del backend + docker-compose
-├── .env                             ← TODAS las secrets (nunca en git)
-├── docker-compose.yml
-├── nginx.conf
-├── api.py                           ← FastAPI (todos los endpoints)
-├── app.py                           ← Streamlit
-└── core/
-
-/opt/deep-audit-landing/             ← repo del frontend Next.js
-└── src/
-
-/mnt/obsidian-vault/                 ← Vault montado (bind mount desde host)
-└── users/<user_id>/                 ← aislamiento por usuario
-    ├── 10_YouTube/
-    ├── 20_GitHub/
-    ├── 30_Web/
-    ├── 40_Docs/
-    ├── 50_Recetas/
-    ├── 60_Audio/
-    └── 70_NotebookLM/
+/ y /dashboard    -> knowledge-landing:3000
+/app              -> knowledge-engine-app:8501
+/api              -> knowledge-engine-api:8000
+/analyze/*        -> knowledge-engine-api:8000
+/search/*         -> knowledge-engine-api:8000
+/rss/*            -> knowledge-engine-api:8000
+/sync/*           -> knowledge-engine-api:8000
 ```
 
 ---
 
-## Flujo de actualización de código
+## Paths importantes
 
-### Opción A — Con Git configurado en el LXC (recomendado)
+```
+/opt/deep-audit-knowledge-engine/    <- repo backend + docker-compose (raiz)
+  .env                               <- TODAS las secrets (NUNCA en git)
+  docker-compose.yml                 <- orquestador de los 5 contenedores
+  nginx.conf                         <- routing del reverse proxy
+  api.py                             <- FastAPI (todos los endpoints)
+  app.py                             <- Streamlit
+  core/                              <- logica de agentes individuales
 
-```bash
-# Acceder al LXC
-ssh root@<IP-LXC>
-# o desde el host Proxmox:
-pct enter 126
+/opt/deep-audit-landing/             <- repo frontend Next.js
+  src/
+    app/
+      page.tsx                       <- landing publica
+      auth/page.tsx                  <- login + signup + OAuth
+      auth/reset/page.tsx            <- recuperacion de contrasena
+      dashboard/
+        page.tsx                     <- overview del dashboard
+        analytics/page.tsx           <- unica pagina 100% conectada a Supabase
+        youtube/page.tsx
+        github/page.tsx
+        web/page.tsx
+        chef/page.tsx
+        rss/page.tsx
+        audio/page.tsx
+        docgrab/page.tsx
+        search/page.tsx
+        notebooklm/page.tsx
+        sync/page.tsx
+        vault/page.tsx               <- pagina huerfana, redirigir a /sync (Sprint 4)
+    components/dashboard/
+      DashboardLayout.tsx            <- sidebar responsive + topbar
+    lib/supabase.ts                  <- createBrowserClient (cookie-based)
+    middleware.ts                    <- protege /dashboard/*
 
-# Actualizar frontend
-cd /opt/deep-audit-landing
-git pull origin main
-cd /opt/deep-audit-knowledge-engine
-docker-compose up -d --build landing
-
-# Actualizar backend
-cd /opt/deep-audit-knowledge-engine
-git pull origin main
-docker-compose up -d --build api app
+/usr/local/bin/docker-compose        <- docker-compose v1
+/mnt/obsidian-vault/                 <- vault montado como bind mount
 ```
 
-### Opción B — Sin Git (rsync desde Windows)
+---
 
-Abrir PowerShell en tu máquina local:
+## Flujo de actualizacion de codigo
+
+### Frontend (mas frecuente)
 
 ```powershell
-# Sincronizar frontend (cambios de código src/)
-rsync -avz --exclude="node_modules" --exclude=".next" `
-  "C:/Users/luuis/Downloads/Proyectos/Agentes/deep-audit-landing/" `
-  root@<IP-LXC>:/opt/deep-audit-landing/
-
-# Sincronizar backend
-rsync -avz --exclude="venv" --exclude="__pycache__" `
-  "C:/Users/luuis/Downloads/Proyectos/Agentes/Agentes Youtube/" `
-  root@<IP-LXC>:/opt/deep-audit-knowledge-engine/
-
-# Luego en el LXC, rebuild:
-# docker-compose up -d --build landing
-# docker-compose up -d --build api app
+# Windows — hacer cambios, luego:
+cd "C:\Users\luuis\Downloads\Proyectos\Agentes\deep-audit-landing"
+git add .
+git commit -m "descripcion del cambio"
+git push origin main
 ```
-
-### Opción C — Configurar Git en el LXC (hacer una sola vez)
 
 ```bash
-# En el LXC
-cd /opt/deep-audit-landing
-git init
-git remote add origin https://github.com/<tu-usuario>/deep-audit-landing.git
-git pull origin main
-
+# LXC — pull y rebuild del contenedor landing
+cd /opt/deep-audit-landing && git pull origin main
 cd /opt/deep-audit-knowledge-engine
-git init
-git remote add origin https://github.com/<tu-usuario>/agentes-youtube.git
-git pull origin main
+/usr/local/bin/docker-compose up -d --build landing
 ```
 
-Después de esto, Opción A funciona directamente.
+### Backend (cambios en api.py o agentes Python)
 
----
+```bash
+# LXC
+cd /opt/deep-audit-knowledge-engine
+git pull origin main   # si el backend tiene su propio repo
+/usr/local/bin/docker-compose up -d --build api app
+```
 
-## Rebuild de contenedores
+### Ambos a la vez
 
 ```bash
 cd /opt/deep-audit-knowledge-engine
-
-# Rebuild solo landing (cambios de Next.js)
-docker-compose up -d --build landing
-
-# Rebuild solo backend (cambios de Python)
-docker-compose up -d --build api app
-
-# Rebuild todo
-docker-compose up -d --build
-
-# Ver logs en tiempo real
-docker logs -f knowledge-landing
-docker logs -f knowledge-engine-api
-docker logs -f knowledge-engine-app
-
-# Reiniciar sin rebuild (solo para cambios de config/env que ya están en .env)
-# NOTA: para cambios de NEXT_PUBLIC_* se necesita rebuild, no restart
-docker-compose restart nginx
-docker-compose restart cloudflared
+/usr/local/bin/docker-compose up -d --build
 ```
 
 ---
 
-## Gestión del .env
+## Rebuild vs restart
 
-El archivo `/opt/deep-audit-knowledge-engine/.env` contiene todas las variables:
+| Cambio | Accion correcta |
+|---|---|
+| Codigo Next.js (src/) | `docker-compose up -d --build landing` |
+| Variables NEXT_PUBLIC_* | `docker-compose up -d --build landing` (rebuild obligatorio) |
+| Codigo Python (api.py, core/) | `docker-compose up -d --build api app` |
+| nginx.conf | `docker-compose restart nginx` |
+| .env (vars no-NEXT_PUBLIC) | `docker-compose up -d --build api app` |
+| Cloudflare tunnel token | `docker-compose restart cloudflared` |
+
+> IMPORTANTE: `docker-compose restart landing` NO recarga las variables NEXT_PUBLIC_*.
+> Las vars NEXT_PUBLIC se hornean en el bundle JS en build-time. Siempre hacer rebuild.
+
+---
+
+## Gestion del .env
+
+Ubicacion: `/opt/deep-audit-knowledge-engine/.env`
 
 ```env
 # Supabase
@@ -163,93 +158,117 @@ VAULT_PATH=/mnt/obsidian-vault
 CLOUDFLARE_TUNNEL_TOKEN=
 ```
 
-**Importante**: Las variables `NEXT_PUBLIC_*` del landing se pasan como build ARGs en docker-compose.yml — se leen de este mismo `.env` como `SUPABASE_URL` y `SUPABASE_KEY`.
+Las vars del frontend se pasan como build ARGs en docker-compose.yml y deben llamarse `SUPABASE_URL` y `SUPABASE_KEY` en el .env (el compose las mapea a `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_ANON_KEY` en el build).
 
-Para cambiar credenciales de Supabase:
+---
+
+## Comandos de diagnostico
+
 ```bash
-# 1. Editar .env
-nano /opt/deep-audit-knowledge-engine/.env
+# Estado de todos los contenedores
+docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 
-# 2. Rebuild obligatorio (no basta con restart)
-docker-compose up -d --build landing
+# Logs en tiempo real
+docker logs -f knowledge-landing
+docker logs -f knowledge-engine-api --tail 50
+docker logs -f knowledge-nginx --tail 20
+
+# Probar que el frontend responde
+curl -s -o /dev/null -w "%{http_code}" http://localhost/
+
+# Probar que el backend responde
+curl -s http://localhost/api/health || curl -s http://localhost:8000/health
+
+# Espacio en disco
+df -h /
+docker system df
+
+# Limpiar imagenes viejas (sin eliminar contenedores activos)
+docker image prune -f
+
+# Limpiar TODO (CUIDADO: elimina contenedores parados e imagenes)
+docker system prune -af
 ```
 
 ---
 
 ## Supabase
 
-### Ejecutar migraciones
-
-1. Abrir [app.supabase.com](https://app.supabase.com)
-2. Ir al proyecto → SQL Editor
-3. Copiar y pegar el contenido de `docs/supabase_migration_v1.sql`
-4. Ejecutar
-
-### Verificar tablas creadas
+### Ver ultimas ingestas
 
 ```sql
 -- En Supabase SQL Editor
-SELECT table_name FROM information_schema.tables
-WHERE table_schema = 'public';
-
--- Verificar función RPC
-SELECT routine_name FROM information_schema.routines
-WHERE routine_name = 'match_document_chunks';
-```
-
-### Ver últimas ingestas
-
-```sql
 SELECT source_type, title, status, processed_at
 FROM ingestions
 ORDER BY processed_at DESC
 LIMIT 20;
 ```
 
+### Stats de uso
+
+```sql
+SELECT
+  source_type,
+  COUNT(*) as total,
+  SUM(prompt_tokens + completion_tokens) as tokens
+FROM ingestions
+GROUP BY source_type
+ORDER BY total DESC;
+```
+
+### Verificar tablas y funciones
+
+```sql
+SELECT table_name FROM information_schema.tables
+WHERE table_schema = 'public';
+
+SELECT routine_name FROM information_schema.routines
+WHERE routine_name = 'match_document_chunks';
+```
+
 ---
 
 ## Cloudflare Tunnel
 
-- El túnel es **dashboard-managed** (creado desde Zero Trust UI, no por CLI).
-- El token vive en `.env` como `CLOUDFLARE_TUNNEL_TOKEN`.
-- Para verificar estado: [one.dash.cloudflare.com](https://one.dash.cloudflare.com) → Networks → Tunnels → knowledge-engine.
-- El contenedor `cloudflared` debe mostrar 4 conexiones activas (qro01, dfw06 o similar).
+- El tunel es dashboard-managed (Zero Trust UI, no CLI).
+- Token en `.env` como `CLOUDFLARE_TUNNEL_TOKEN`.
+- Verificar estado: one.dash.cloudflare.com -> Networks -> Tunnels -> knowledge-engine
+- Deben aparecer 4 conexiones activas.
 
-Si el túnel cae:
 ```bash
-docker-compose restart cloudflared
+# Si el tunel cae:
+/usr/local/bin/docker-compose restart cloudflared
 docker logs knowledge-engine-tunnel --tail 20
 ```
 
 ---
 
-## Diagnóstico rápido
+## PATH permanente en LXC
+
+`docker-compose` esta en `/usr/local/bin/` que no esta en PATH por defecto:
 
 ```bash
-# ¿Todos los contenedores corriendo?
-docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+# Agregar permanentemente (hacer una vez):
+echo 'export PATH=$PATH:/usr/local/bin' >> ~/.bashrc
+source ~/.bashrc
 
-# ¿El frontend responde?
-curl -s http://localhost/health || curl -s http://localhost | head -5
-
-# ¿El backend responde?
-curl -s http://localhost/api/health
-
-# ¿Espacio en disco?
-df -h /
-docker system df
-
-# Limpiar imágenes viejas sin eliminar contenedores activos
-docker image prune -f
+# Verificar:
+docker-compose --version
 ```
 
-## Situaciones conocidas y soluciones
+---
 
-| Problema | Causa | Solución |
+## Situaciones conocidas
+
+| Problema | Causa | Solucion |
 |---|---|---|
-| `docker compose` dice "unknown flag -d" | Plugin v2 no instalado | Usar `docker-compose` (v1) o reinstalar plugin v2 |
-| Landing muestra credenciales placeholder | `NEXT_PUBLIC_*` no se actualizaron en build | `docker-compose up -d --build landing` (no restart) |
-| Dashboard loop 307 tras login | `createClient` de supabase-js (localStorage) en supabase.ts | Verificar que usa `createBrowserClient` de `@supabase/ssr` |
-| Build falla por "no space left" | Disco lleno por imágenes antiguas | `docker system prune -af` y rebuildar |
-| Tunnel "locally configured" no aparece en dashboard | Creado por CLI, no por UI | Eliminar tunnel de CLI, recrear desde Zero Trust Dashboard |
-| `docker-compose up` no encuentra el compose v2 | `/usr/local/bin/docker-compose` fue eliminado | Reinstalar: `curl -SL https://github.com/docker/compose/releases/download/v2.27.0/docker-compose-linux-x86_64 -o /usr/local/lib/docker/cli-plugins/docker-compose && chmod +x /usr/local/lib/docker/cli-plugins/docker-compose` |
+| `docker-compose: command not found` | /usr/local/bin no en PATH | Usar `/usr/local/bin/docker-compose` o agregar al PATH en ~/.bashrc |
+| Build falla "Unexpected character" | Curly quotes U+201C/U+201D en JSX | Sanitizar con PowerShell: `-replace [char]0x201C, '"' -replace [char]0x201D, '"'` |
+| Caracteres espanoles corruptos en codigo | PowerShell 5.1 lee UTF-8 como CP1252 | Usar `[System.IO.File]::WriteAllText(path, content, UTF8)` |
+| Loop 307 tras login | createClient de supabase-js en supabase.ts | Verificar que usa createBrowserClient de @supabase/ssr |
+| Dashboard muestra credenciales placeholder | NEXT_PUBLIC_* no actualizadas en build | `docker-compose up -d --build landing` (no restart) |
+| API URL falla en produccion | Fallback a "http://localhost:8000" | Cambiar fallback a "" en todos los fetch |
+| Icono Github no encontrado en build | lucide-react v1.x no exporta Github | Reemplazar con GitBranch en todos los archivos |
+| "No space left on device" durante build | Disco lleno por imagenes antiguas | `docker system prune -af && docker-compose up -d --build landing` |
+| Tunel "locally configured" no visible en dashboard | Creado por CLI no por UI | Eliminar tunnel de CLI, recrear desde Zero Trust Dashboard |
+| PowerShell && falla | PS 5.1 no soporta pipeline chains | Usar `;` para secuencia o comandos separados |
