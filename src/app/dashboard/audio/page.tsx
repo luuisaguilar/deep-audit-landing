@@ -78,8 +78,8 @@ export default function AudioPage() {
             ) : (
               <div className="space-y-3">
                 <Upload className="w-12 h-12 text-gray-600 mx-auto group-hover:text-[#10b981] transition-colors" />
-                <p className=”text-gray-400 font-medium”>Arrastra un archivo de audio aquí</p>
-                <p className=”text-xs text-gray-600”>MP3, WAV, M4A, OGG – máx. 100 MB</p>
+                <p className="text-gray-400 font-medium">Arrastra un archivo de audio aqui</p>
+                <p className="text-xs text-gray-600">MP3, WAV, M4A, OGG - max. 100 MB</p>
               </div>
             )}
           </div>
