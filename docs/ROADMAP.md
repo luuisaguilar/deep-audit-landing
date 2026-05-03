@@ -1,6 +1,6 @@
 # Roadmap — Deep Audit Knowledge Engine
 
-**Ultima actualizacion: 2 de Mayo 2026**
+**Ultima actualizacion: 2 de Mayo 2026 — post sesion 4**
 
 ---
 
@@ -61,17 +61,18 @@
 - [x] RSS delete: POST /rss/remove-feed + actualizar lista
 - [x] Badge de plan desde user.user_metadata?.plan (en lugar de "PRO PLAN" fijo)
 - [x] Topbar search -> router.push('/dashboard/analytics?q=') al presionar Enter
+- [x] Analytics page lee ?q= param y filtra resultados client-side (Suspense + useSearchParams)
 
 ---
 
 ## En curso
 
-### Sprint 4 — Limpieza (Siguiente)
+### Sprint 4 — Limpieza (En curso)
 
 **Objetivo**: Eliminar comportamientos enganosos y codigo muerto.
 
-- [ ] Eliminar simulateLogs() en DocGrab, reemplazar con "Tarea encolada"
-- [ ] Eliminar "142 paginas detectadas" hardcodeado en DocGrab
+- [x] Eliminar simulateLogs() en DocGrab, reemplazar con "Tarea encolada"
+- [x] Eliminar "142 paginas detectadas" hardcodeado en DocGrab
 - [ ] Select "Profundidad" en DocGrab -> pasar depth al request de API
 - [ ] /dashboard/vault -> redirect('/dashboard/sync')
 - [ ] Landing navbar -> hamburger en mobile (< md)

@@ -10,6 +10,7 @@ import {
 
 export default function DocGrabPage() {
   const [url, setUrl] = useState("");
+  const [depth, setDepth] = useState("3");
   const [loading, setLoading] = useState(false);
   const [isQueued, setIsQueued] = useState(false);
   const [logs, setLogs] = useState<string[]>(["[SYSTEM] Console initialized. Awaiting target URL..."]);
@@ -28,7 +29,7 @@ export default function DocGrabPage() {
       const response = await fetch(`${apiUrl}/analyze/docgrab`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, depth }),
       });
 
       if (!response.ok) throw new Error("Connection failed");
@@ -93,10 +94,14 @@ export default function DocGrabPage() {
 
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase text-gray-500">Profundidad</label>
-                <select className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-[#10b981]/50 outline-none appearance-none">
-                  <option>Nivel 1 (Pagina actual)</option>
-                  <option>Nivel 3 (Recomendado)</option>
-                  <option>Recursivo Total</option>
+                <select
+                  value={depth}
+                  onChange={(e) => setDepth(e.target.value)}
+                  className="w-full bg-white/5 border border-white/10 rounded-xl py-3 px-4 text-sm text-white focus:outline-none focus:border-[#10b981]/50 outline-none appearance-none"
+                >
+                  <option value="1">Nivel 1 (Pagina actual)</option>
+                  <option value="3">Nivel 3 (Recomendado)</option>
+                  <option value="99">Recursivo Total</option>
                 </select>
               </div>
 

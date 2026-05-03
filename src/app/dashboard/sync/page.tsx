@@ -1,17 +1,21 @@
-﻿﻿"use client";
+"use client";
 import React, { useState } from "react";
-import { RefreshCw, CheckCircle2, AlertCircle, Loader2, FolderSync, FileText, Clock } from "lucide-react";
+import { RefreshCw, CheckCircle2, AlertCircle, Loader2, FolderSync, FileText, Clock, Sparkles } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function SyncPage() {
   const [loading, setLoading] = useState(false);
   const [status, setStatus] = useState<"idle" | "success" | "error">("idle");
   const [message, setMessage] = useState("");
   const [syncStats, setSyncStats] = useState<{ synced: number; new: number; updated: number } | null>(null);
+  const [dedupStats, setDedupStats] = useState<{ before: number; after: number; deleted: number } | null>(null);
+  const [isDeduping, setIsDeduping] = useState(false);
 
   const handleSync = async () => {
     setLoading(true);
     setStatus("idle");
     setSyncStats(null);
+    setDedupStats(null);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
       const response = await fetch(`${apiUrl}/sync/obsidian`, {
@@ -32,77 +36,122 @@ export default function SyncPage() {
     }
   };
 
+  const handleDeduplicate = async () => {
+    setIsDeduping(true);
+    setStatus("idle");
+    setDedupStats(null);
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const response = await fetch(`${apiUrl}/vault/deduplicate`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({}),
+      });
+      if (!response.ok) throw new Error("Error al deduplicar");
+      const data = await response.json();
+      setStatus("success");
+      setMessage(data.message || "Limpieza semántica completada.");
+      setDedupStats({ before: data.total_before, after: data.total_after, deleted: data.deleted });
+    } catch (err: any) {
+      setStatus("error");
+      setMessage(err.message || "Error en la limpieza semántica.");
+    } finally {
+      setIsDeduping(false);
+    }
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-700">
       <div>
-        <h1 className="text-3xl font-bold">Vault <span className="emerald-text-gradient">Sync</span></h1>
-        <p className="text-gray-500 mt-1">Sincroniza todas las notas generadas por los agentes con tu Vault de Obsidian.</p>
+        <h1 className="text-3xl font-bold">Vault <span className="emerald-text-gradient">Maintenance</span></h1>
+        <p className="text-gray-500 mt-1">Sincroniza y mantén tu base de conocimiento limpia y libre de duplicados.</p>
       </div>
 
-      <div className="grid grid-cols-3 gap-4">
-        {[
-          { icon: FolderSync, label: "Sincronización Automática", desc: "Exporta todas las notas al vault en Obsidian" },
-          { icon: FileText, label: "Formatos Compatibles", desc: "YouTube, GitHub, Web, Recetas, RSS, Audio" },
-          { icon: Clock, label: "Historial Completo", desc: "Fecha y autor de cada nota sincronizada" },
-        ].map(({ icon: Icon, label, desc }, i) => (
-          <div key={i} className="glass p-5 border border-white/10">
-            <Icon className="w-6 h-6 text-[#10b981] mb-3" />
-            <p className="font-bold text-sm mb-1">{label}</p>
-            <p className="text-xs text-gray-500">{desc}</p>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        {/* Sync Section */}
+        <div className="glass p-8 flex flex-col items-center text-center space-y-6">
+          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center transition-all ${
+            loading ? "bg-[#10b981]/20 scale-110" : "bg-white/5"
+          }`}>
+            <RefreshCw className={`w-8 h-8 ${loading ? "text-[#10b981] animate-spin" : "text-gray-400"}`} />
           </div>
-        ))}
+          <div>
+            <h2 className="text-lg font-bold mb-1">Obsidian Sync</h2>
+            <p className="text-xs text-gray-500">Exporta todas las notas generadas a tu vault local de Obsidian.</p>
+          </div>
+          <button
+            onClick={handleSync}
+            disabled={loading || isDeduping}
+            className="btn-emerald w-full py-3 flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <FolderSync className="w-4 h-4" />}
+            {loading ? "Sincronizando..." : "Sincronizar Vault"}
+          </button>
+        </div>
+
+        {/* Deduplication Section */}
+        <div className="glass p-8 flex flex-col items-center text-center space-y-6">
+          <div className={`w-20 h-20 rounded-2xl flex items-center justify-center transition-all ${
+            isDeduping ? "bg-purple-500/20 scale-110" : "bg-white/5"
+          }`}>
+            <Sparkles className={`w-8 h-8 ${isDeduping ? "text-purple-400 animate-pulse" : "text-gray-400"}`} />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold mb-1">Limpieza Semántica</h2>
+            <p className="text-xs text-gray-500">Detecta y elimina automáticamente fragmentos de información redundante.</p>
+          </div>
+          <button
+            onClick={handleDeduplicate}
+            disabled={loading || isDeduping}
+            className="w-full bg-purple-500/10 border border-purple-500/20 text-purple-400 hover:bg-purple-500/20 py-3 rounded-xl transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+          >
+            {isDeduping ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle2 className="w-4 h-4" />}
+            {isDeduping ? "Limpiando..." : "Ejecutar Deduplicación"}
+          </button>
+        </div>
       </div>
 
-      <div className="glass p-8 flex flex-col items-center text-center space-y-6">
-        <div className={`w-24 h-24 rounded-full flex items-center justify-center ${
-          loading ? "bg-[#10b981]/20" : "bg-white/5"
-        }`}>
-          <RefreshCw className={`w-10 h-10 ${loading ? "text-[#10b981] animate-spin" : "text-gray-500"}`} />
-        </div>
+      {(status === "success" || status === "error") && (
+        <div className={cn(
+          "w-full p-6 border rounded-2xl animate-in zoom-in-95 duration-300",
+          status === "success" ? "bg-[#10b981]/5 border-[#10b981]/20 text-[#10b981]" : "bg-red-500/5 border-red-500/20 text-red-400"
+        )}>
+          <div className="flex items-center gap-3 mb-4">
+            {status === "success" ? <CheckCircle2 className="w-5 h-5" /> : <AlertCircle className="w-5 h-5" />}
+            <span className="font-bold">{message}</span>
+          </div>
 
-        <div>
-          <h2 className="text-xl font-bold mb-1">Sincronizar con Obsidian</h2>
-          <p className="text-sm text-gray-500">
-            Exporta todas las notas del Knowledge Engine a tu Vault local.
-          </p>
-        </div>
-
-        <button
-          onClick={handleSync}
-          disabled={loading}
-          className="btn-emerald px-10 py-4 flex items-center gap-2 disabled:opacity-50"
-        >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <RefreshCw className="w-5 h-5" />}
-          {loading ? "Sincronizando..." : "Iniciar Sincronización"}
-        </button>
-
-        {status === "success" && (
-          <div className="w-full p-4 bg-[#10b981]/10 border border-[#10b981]/20 rounded-xl text-[#10b981] text-sm">
-            <div className="flex items-center justify-center gap-3 mb-3">
-              <CheckCircle2 className="w-5 h-5 shrink-0" /> {message}
+          {syncStats && (
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { label: "Total", value: syncStats.synced },
+                { label: "Nuevas", value: syncStats.new },
+                { label: "Actualizadas", value: syncStats.updated },
+              ].map(({ label, value }) => (
+                <div key={label} className="bg-white/5 rounded-xl p-4 text-center">
+                  <div className="text-2xl font-bold">{value}</div>
+                  <div className="text-[10px] uppercase tracking-widest opacity-60 mt-1">{label}</div>
+                </div>
+              ))}
             </div>
-            {syncStats && (
-              <div className="grid grid-cols-3 gap-4 mt-3">
-                {[
-                  { label: "Total", value: syncStats.synced },
-                  { label: "Nuevas", value: syncStats.new },
-                  { label: "Actualizadas", value: syncStats.updated },
-                ].map(({ label, value }) => (
-                  <div key={label} className="bg-[#10b981]/10 rounded-lg p-3">
-                    <div className="text-2xl font-bold">{value}</div>
-                    <div className="text-[10px] uppercase tracking-wider opacity-70">{label}</div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-        {status === "error" && (
-          <div className="w-full p-4 bg-red-500/10 border border-red-500/20 rounded-xl text-red-400 text-sm flex items-center justify-center gap-3">
-            <AlertCircle className="w-5 h-5 shrink-0" /> {message}
-          </div>
-        )}
-      </div>
+          )}
+
+          {dedupStats && (
+            <div className="grid grid-cols-3 gap-4">
+              {[
+                { label: "Antes", value: dedupStats.before },
+                { label: "Después", value: dedupStats.after },
+                { label: "Eliminados", value: dedupStats.deleted, color: "text-red-400" },
+              ].map(({ label, value, color }) => (
+                <div key={label} className="bg-white/5 rounded-xl p-4 text-center">
+                  <div className={cn("text-2xl font-bold", color)}>{value}</div>
+                  <div className="text-[10px] uppercase tracking-widest opacity-60 mt-1">{label}</div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }

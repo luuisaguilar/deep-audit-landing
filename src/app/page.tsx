@@ -1,17 +1,19 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { 
-  Zap, 
-  Database, 
-  ShieldCheck, 
-  ArrowRight, 
-  CheckCircle2, 
+import {
+  Zap,
+  Database,
+  ShieldCheck,
+  ArrowRight,
+  CheckCircle2,
   Video,
   Globe,
-  Search, 
-  BookOpen 
+  Search,
+  BookOpen,
+  Menu,
+  X
 } from "lucide-react";
 import AOS from "aos";
 import "aos/dist/aos.css";
@@ -19,6 +21,8 @@ import CountUp from "react-countup";
 import GalaxyBackground from "@/components/GalaxyBackground";
 
 export default function LandingPage() {
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
   useEffect(() => {
     AOS.init({
       duration: 1000,
@@ -27,26 +31,49 @@ export default function LandingPage() {
   }, []);
 
   return (
-    <main className="min-h-screen text-white relative">
+    <main className="min-h-screen text-white relative overflow-x-hidden">
       <GalaxyBackground />
       {/* Background Glows */}
       <div className="emerald-glow-bg top-[-100px] left-[-100px] opacity-30" />
       <div className="emerald-glow-bg bottom-[100px] right-[-100px] opacity-20" />
 
       {/* Navbar */}
-      <nav className="fixed top-0 w-full z-50 glass py-4 px-8 flex justify-between items-center border-b border-white/5">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-[#10b981] rounded-lg flex items-center justify-center">
-            <Zap className="text-[#0e1117] w-5 h-5" />
+      <nav className="fixed top-0 w-full z-50 glass border-b border-white/5">
+        <div className="py-4 px-8 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-[#10b981] rounded-lg flex items-center justify-center">
+              <Zap className="text-[#0e1117] w-5 h-5" />
+            </div>
+            <span className="font-bold text-xl tracking-tight">Deep Audit</span>
           </div>
-          <span className="font-bold text-xl tracking-tight">Deep Audit</span>
-        </div>
-        <div className="flex items-center gap-8">
+
+          {/* Desktop links */}
+          <div className="hidden md:flex items-center gap-8">
             <Link href="#beneficios" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">Beneficios</Link>
             <Link href="#precios" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">Precios</Link>
             <Link href="#faq" className="text-sm font-medium text-gray-400 hover:text-white transition-colors">FAQ</Link>
             <Link href="/auth" className="btn-emerald">Sign In</Link>
           </div>
+
+          {/* Hamburger — mobile only */}
+          <button
+            onClick={() => setMobileMenuOpen((v) => !v)}
+            className="md:hidden p-2 text-gray-400 hover:text-white transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+            aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+          >
+            {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+          </button>
+        </div>
+
+        {/* Mobile dropdown */}
+        {mobileMenuOpen && (
+          <div className="md:hidden border-t border-white/5 px-8 py-4 flex flex-col gap-4 bg-[#0e1117]/95 backdrop-blur-sm">
+            <Link href="#beneficios" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-gray-400 hover:text-white transition-colors py-2">Beneficios</Link>
+            <Link href="#precios" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-gray-400 hover:text-white transition-colors py-2">Precios</Link>
+            <Link href="#faq" onClick={() => setMobileMenuOpen(false)} className="text-sm font-medium text-gray-400 hover:text-white transition-colors py-2">FAQ</Link>
+            <Link href="/auth" className="btn-emerald text-center">Sign In</Link>
+          </div>
+        )}
       </nav>
 
       {/* Hero Section */}

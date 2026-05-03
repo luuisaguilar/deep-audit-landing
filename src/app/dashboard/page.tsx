@@ -12,6 +12,9 @@ import {
   CheckCircle2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { cn } from "@/lib/utils";
+import EmptyState from "@/components/EmptyState";
+import { History } from "lucide-react";
 
 interface Ingestion {
   id: number;
@@ -40,22 +43,13 @@ function relativeTime(dateStr: string): string {
   return `Hace ${Math.floor(hrs / 24)}d`;
 }
 
-function cn(...inputs: unknown[]): string {
-  return (inputs.filter(Boolean) as string[]).join(" ");
-}
-
 export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [ingestions, setIngestions] = useState<Ingestion[]>([]);
   const [stats, setStats] = useState({ total: 0, tokens: 0, activeAgents: 0, successful: 0 });
 
   useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
-    setLoading(true);
-    try {
+    async function load() {
       const { data: { user } } = await supabase.auth.getUser();
       let query = supabase
         .from("ingestions")
@@ -65,19 +59,18 @@ export default function DashboardPage() {
       if (user) query = query.eq("user_id", user.id);
       const { data } = await query;
       const rows = (data || []) as Ingestion[];
-      setIngestions(rows);
-
       const types = new Set(rows.map((r) => r.source_type));
       const tokens = rows.reduce(
         (s, r) => s + (r.prompt_tokens || 0) + (r.completion_tokens || 0),
         0
       );
       const successful = rows.filter((r) => r.status === "success").length;
+      setIngestions(rows);
       setStats({ total: rows.length, tokens, activeAgents: types.size, successful });
-    } finally {
       setLoading(false);
     }
-  };
+    load();
+  }, []);
 
   const recent = ingestions.slice(0, 3);
 
@@ -154,9 +147,11 @@ export default function DashboardPage() {
             </a>
           </div>
           {recent.length === 0 ? (
-            <div className="text-center text-gray-600 text-sm py-8">
-              No hay actividad aun. Usa cualquier agente para comenzar.
-            </div>
+            <EmptyState 
+              icon={History}
+              title="Sin actividad reciente"
+              description="Usa cualquier agente para comenzar a procesar información."
+            />
           ) : (
             <div className="space-y-6">
               {recent.map((item) => (

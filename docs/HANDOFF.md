@@ -1,13 +1,13 @@
 # Handoff — Deep Audit Knowledge Engine
 
-**Ultima actualizacion: 2 de Mayo 2026**
-**Sprint actual: Sprint 3 — Datos reales**
+**Ultima actualizacion: 2 de Mayo 2026 — post sesion 4**
+**Sprint actual: Sprint 4 — Limpieza (en curso)**
 
 ---
 
 ## Estado en una linea
 
-El sistema esta desplegado en produccion en `knowledge.luisaguilaraguila.com`. Los Sprints 1 y 2 estan completos. El dashboard tiene 11 agentes funcionales. El unico pendiente bloqueante es reemplazar el mock data del overview, YouTube y RSS con datos reales de Supabase.
+El sistema esta en produccion en `knowledge.luisaguilaraguila.com`. Sprints 1, 2 y 3 completos. Todo el mock data ha sido eliminado — el dashboard muestra datos reales de Supabase. Sprint 4 en curso: 2 de 10 items completos (DocGrab limpio), 8 pendientes de limpieza menor.
 
 ---
 
@@ -20,33 +20,32 @@ El sistema esta desplegado en produccion en `knowledge.luisaguilaraguila.com`. L
 | Auth OAuth Google/GitHub | Codigo listo | Requiere activar providers en Supabase Dashboard |
 | /auth/reset (password recovery) | OK | Evento PASSWORD_RECOVERY de onAuthStateChange |
 | Dashboard sidebar | OK | Mobile drawer + hamburger + Escape + scroll lock |
-| 11 paginas de agentes | OK | Todas las rutas responden, formularios funcionales |
-| Analytics page | OK | Datos reales de Supabase ingestions |
+| 11 paginas de agentes | OK | Formularios funcionales, historial real desde Supabase |
+| Overview dashboard | OK | Stats reales + actividad reciente desde ingestions |
+| Analytics page | OK | Datos reales + search con filtro por ?q= |
+| Topbar search | OK | router.push a /analytics?q=, filtrado client-side |
+| RSS feeds | OK | GET /rss/feeds, POST add-feed, POST remove-feed |
+| Badge de plan | OK | user.user_metadata?.plan o "FREE" |
+| DocGrab | OK | Logs honestos, sin fake data, boton "Nueva tarea" |
 | FastAPI backend | OK | Endpoints para todos los agentes |
-| Supabase (ingestions + pgvector) | OK | Migracion v1 ejecutada, RLS activo |
-| Cloudflare Tunnel | OK | 4 conexiones activas (qro01, dfw06 o similar) |
+| Supabase (ingestions + pgvector) | OK | Migracion v1, RLS activo |
+| Cloudflare Tunnel | OK | 4 conexiones activas |
 | Nginx reverse proxy | OK | /, /app, /api, /analyze, /search, /rss, /sync |
 
-## Lo que aun es mock data (Sprint 3 — proximo)
+---
 
-| Pantalla | Mock data | Fix |
-|---|---|---|
-| Overview stats | "12,450", "458h", "1.2M", "3 agentes" | Query ingestions COUNT + SUM tokens |
-| Overview "Actividad Reciente" | 3 items inventados | ingestions ORDER BY processed_at LIMIT 3 |
-| YouTube historial | 3 items falsos | ingestions WHERE source_type='youtube' LIMIT 10 |
-| RSS "Feeds Activos" | MOCK_FEEDS hardcodeado | GET /rss/feeds endpoint (crear) |
-| Badge "PRO PLAN" | Hardcodeado | user.user_metadata?.plan |
-| Overview "Active Agents" | Hardcodeado "3" | COUNT DISTINCT source_type en ingestions |
+## Lo que esta pendiente (Sprint 4 — limpieza menor)
 
-## Lo que esta pendiente (Sprint 4 — limpieza)
-
-| Item | Archivo | Fix |
-|---|---|---|
-| simulateLogs() genera logs falsos | dashboard/docgrab/page.tsx | Eliminar, mostrar "Encolado" |
-| "142 paginas detectadas" hardcodeado | dashboard/docgrab/page.tsx | Eliminar hasta tener dato real |
-| /dashboard/vault sin uso | dashboard/vault/page.tsx | redirect('/dashboard/sync') |
-| Topbar search sin funcionalidad | DashboardLayout.tsx | router.push('/dashboard/search?q='+query) |
-| "Settings" sin pagina destino | DashboardLayout.tsx | Crear /dashboard/settings o deshabilitar |
+| # | Item | Archivo | Fix |
+|---|---|---|---|
+| S4-3 | Select "Profundidad" no pasa depth al API | dashboard/docgrab/page.tsx | Pasar depth en body del fetch + endpoint API |
+| S4-4 | /dashboard/vault sin uso | dashboard/vault/page.tsx | redirect('/dashboard/sync') |
+| S4-5 | Landing navbar sin hamburger en mobile | src/app/page.tsx | hidden md:flex en nav links + boton hamburger |
+| S4-6 | EmptyState repetido en cada pagina | multiple paginas | Crear src/components/EmptyState.tsx |
+| S4-7 | fn cn() duplicada | dashboard/page.tsx | Importar desde @/lib/utils |
+| S4-8 | "Settings" en sidebar sin destino | DashboardLayout.tsx | Crear /dashboard/settings o deshabilitar |
+| S4-9 | Stats de /sync/obsidian siempre 0 | api.py | sync_all_to_obsidian() debe retornar conteo real |
+| S4-10 | overflow-x en landing a 375px | src/app/page.tsx | overflow-x: hidden en main |
 
 ---
 
@@ -98,12 +97,12 @@ knowledge-engine-tunnel    cloudflare/cloudflared        -
 |---|---|
 | `createBrowserClient` de `@supabase/ssr` | El middleware lee cookies, no localStorage. `createClient` normal causa loop 307 al hacer login. |
 | `NEXT_PUBLIC_*` como build ARGs de Docker | Se hornean en el bundle en build-time. Cambiarlos requiere rebuild, no restart. |
-| `NEXT_PUBLIC_API_URL=""` (vacio) en produccion | Nginx proxea las rutas relativas `/analyze/*` al contenedor FastAPI. Fallback `"http://localhost:8000"` rompe produccion (el browser no puede llegar a localhost:8000). |
+| `NEXT_PUBLIC_API_URL=""` (vacio) en produccion | Nginx proxea las rutas relativas `/analyze/*` al contenedor FastAPI. Fallback `"http://localhost:8000"` rompe produccion. |
 | `user_id` en todas las tablas | Multi-tenant desde inicio. RLS filtra por auth.uid(). |
-| Indice unico `(source_url, user_id)` | `source_url` solo romperia si dos usuarios intentan indexar la misma URL. |
-| `GitBranch` en vez de `Github` | lucide-react v1.x instalada no exporta `Github`. Build falla si se usa. |
+| `GitBranch` en vez de `Github` | lucide-react instalada no exporta `Github`. Build falla si se usa. |
 | Comillas rectas en JSX | Turbopack (Next.js 16) rechaza curly quotes U+201C/U+201D con "Unexpected character". |
-| `[System.IO.File]::WriteAllText` en PowerShell | `Set-Content -Encoding utf8` en PS 5.1 lee UTF-8 como CP1252 y re-codifica, corrompiendo caracteres espanoles. |
+| `[System.IO.File]::WriteAllText` en PowerShell | `Set-Content -Encoding utf8` en PS 5.1 corrompe caracteres espanoles. |
+| `Suspense` wrapper en paginas con `useSearchParams` | Next.js App Router requiere Suspense boundary para useSearchParams en client components. |
 
 ---
 
