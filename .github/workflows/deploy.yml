@@ -6,32 +6,35 @@ on:
 
 jobs:
   deploy:
-    name: SSH → git pull → rebuild landing
+    name: Tailscale → pve → pct exec 126 → rebuild landing
     runs-on: ubuntu-latest
     timeout-minutes: 15
 
     steps:
-      - name: Deploy via SSH
+      - name: Conectar a Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          authkey: ${{ secrets.TAILSCALE_AUTHKEY }}
+
+      - name: Deploy via SSH a pve
         uses: appleboy/ssh-action@v1.0.3
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
+          host: 100.113.196.15
+          username: root
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SSH_PORT }}
+          port: 22
           script: |
             set -e
 
-            echo "▶ [1/3] Pull frontend..."
-            cd /opt/deep-audit-landing
-            git pull origin main
+            echo "▶ [1/3] Pull frontend en LXC 126..."
+            pct exec 126 -- bash -c "cd /opt/deep-audit-landing && git pull origin main"
 
             echo "▶ [2/3] Rebuild landing container..."
-            cd /opt/deep-audit-knowledge-engine
-            /usr/local/bin/docker-compose up -d --build landing
+            pct exec 126 -- bash -c "cd /opt/deep-audit-knowledge-engine && /usr/local/bin/docker-compose up -d --build landing"
 
             echo "▶ [3/3] Health check..."
-            sleep 5
-            STATUS=$(curl -s -o /dev/null -w "%{http_code}" http://localhost/)
+            sleep 8
+            STATUS=$(pct exec 126 -- bash -c "curl -s -o /dev/null -w '%{http_code}' http://localhost/")
             if [ "$STATUS" != "200" ]; then
               echo "❌ Health check falló — HTTP $STATUS"
               exit 1
