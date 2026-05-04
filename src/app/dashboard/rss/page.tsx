@@ -9,6 +9,7 @@ import {
   Trash2,
   RefreshCw,
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 interface Feed {
   id: number | string;
@@ -34,7 +35,9 @@ export default function RssPage() {
     setFeedsLoading(true);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const response = await fetch(`${apiUrl}/rss/feeds`);
+      const { data: { user } } = await supabase.auth.getUser();
+      const params = user?.id ? `?user_id=${user.id}` : "";
+      const response = await fetch(`${apiUrl}/rss/feeds${params}`);
       if (!response.ok) throw new Error("no feeds");
       const data = await response.json();
       setFeeds(data || []);
@@ -52,10 +55,11 @@ export default function RssPage() {
     setStatus("idle");
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const { data: { user } } = await supabase.auth.getUser();
       const response = await fetch(`${apiUrl}/rss/add-feed`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url }),
+        body: JSON.stringify({ url, user_id: user?.id }),
       });
       if (!response.ok) throw new Error("Error al agregar el feed");
       setStatus("success");
@@ -73,10 +77,11 @@ export default function RssPage() {
   const handleRemoveFeed = async (id: number | string) => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const { data: { user } } = await supabase.auth.getUser();
       const response = await fetch(`${apiUrl}/rss/remove-feed`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id }),
+        body: JSON.stringify({ id, user_id: user?.id }),
       });
       if (!response.ok) throw new Error("Error al eliminar el feed");
       setFeeds(feeds.filter((f) => f.id !== id));
