@@ -1,6 +1,7 @@
 ﻿﻿"use client";
 import React, { useState } from "react";
 import { BookOpen, CheckCircle2, AlertCircle, Loader2, Download, Sparkles } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function NotebookLMPage() {
   const [topic, setTopic] = useState("");
@@ -17,10 +18,11 @@ export default function NotebookLMPage() {
     setPackUrl(null);
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const { data: { user } } = await supabase.auth.getUser();
       const response = await fetch(`${apiUrl}/analyze/notebooklm`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ topic }),
+        body: JSON.stringify({ topic, user_id: user?.id }),
       });
       if (!response.ok) throw new Error("Error generando el pack");
       const data = await response.json();

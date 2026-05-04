@@ -7,6 +7,7 @@ import {
   Play,
   Loader2,
 } from "lucide-react";
+import { supabase } from "@/lib/supabase";
 
 export default function DocGrabPage() {
   const [url, setUrl] = useState("");
@@ -26,10 +27,11 @@ export default function DocGrabPage() {
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const { data: { user } } = await supabase.auth.getUser();
       const response = await fetch(`${apiUrl}/analyze/docgrab`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, depth }),
+        body: JSON.stringify({ url, depth, user_id: user?.id }),
       });
 
       if (!response.ok) throw new Error("Connection failed");

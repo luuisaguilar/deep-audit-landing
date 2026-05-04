@@ -75,8 +75,10 @@ export default function AudioPage() {
     setStatus("idle");
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
+      const { data: { user } } = await supabase.auth.getUser();
       const formData = new FormData();
       formData.append("file", file);
+      if (user?.id) formData.append("user_id", user.id);
       const response = await fetch(`${apiUrl}/analyze/audio`, {
         method: "POST",
         body: formData,
