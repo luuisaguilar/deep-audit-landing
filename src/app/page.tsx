@@ -243,6 +243,8 @@ export default function LandingPage() {
         <p>
           <Link href="/privacy" className="hover:text-gray-400 transition-colors">Aviso de Privacidad</Link>
           {" "}&middot;{" "}
+          <Link href="/terms" className="hover:text-gray-400 transition-colors">Terminos de Servicio</Link>
+          {" "}&middot;{" "}
           <a href="mailto:luisaguilaraguila@gmail.com" className="hover:text-gray-400 transition-colors">Contacto</a>
         </p>
       </footer>
