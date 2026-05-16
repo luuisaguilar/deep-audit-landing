@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
@@ -238,8 +238,13 @@ export default function LandingPage() {
       </section>
 
       {/* Footer */}
-      <footer className="py-12 border-t border-white/5 text-center text-gray-600 text-sm">
-        <p>© 2026 Deep Audit Knowledge Engine. Desarrollado con ❤️ por Antigravity AI.</p>
+      <footer className="py-12 border-t border-white/5 text-center text-gray-600 text-sm space-y-2">
+        <p>&copy; 2026 Deep Audit Knowledge Engine. Desarrollado con cuidado por Antigravity AI.</p>
+        <p>
+          <Link href="/privacy" className="hover:text-gray-400 transition-colors">Aviso de Privacidad</Link>
+          {" "}&middot;{" "}
+          <a href="mailto:luisaguilaraguila@gmail.com" className="hover:text-gray-400 transition-colors">Contacto</a>
+        </p>
       </footer>
     </main>
   );
