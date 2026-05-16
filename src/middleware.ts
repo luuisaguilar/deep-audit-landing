@@ -5,10 +5,8 @@ export async function middleware(request: NextRequest) {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
-  // Si no hay credenciales, dejamos pasar la petición para evitar que la app se rompa
-  // Pero avisamos en consola (solo visible en el servidor/terminal)
+  // Sin credenciales Supabase: bloquear /dashboard, permitir landing y /auth
   if (!supabaseUrl || !supabaseKey) {
-    console.warn("⚠️ Supabase credentials missing. Blocking /dashboard access.");
     if (request.nextUrl.pathname.startsWith('/dashboard')) {
       return NextResponse.redirect(new URL('/auth', request.url))
     }
