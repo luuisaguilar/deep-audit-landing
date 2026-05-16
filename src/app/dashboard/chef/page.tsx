@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/apiClient";
 
 interface Ingestion {
   id: number;
@@ -55,12 +56,9 @@ export default function ChefPage() {
     setLoading(true);
     setStatus("idle");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const { data: { user } } = await supabase.auth.getUser();
-      const response = await fetch(`${apiUrl}/analyze/chef`, {
+      const response = await apiFetch("/analyze/chef", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, user_id: user?.id }),
+        body: JSON.stringify({ url }),
       });
       if (!response.ok) throw new Error("Error en el servidor de agentes");
       setStatus("success");

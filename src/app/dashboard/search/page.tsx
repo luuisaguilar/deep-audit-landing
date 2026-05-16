@@ -1,7 +1,7 @@
 ﻿﻿"use client";
 import React, { useState } from "react";
 import { Search, Loader2, FileText, AlertCircle, Sparkles } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/apiClient";
 
 interface SearchResult {
   answer: string;
@@ -21,12 +21,9 @@ export default function SearchPage() {
     setResult(null);
     setError("");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const { data: { user } } = await supabase.auth.getUser();
-      const response = await fetch(`${apiUrl}/search/rag`, {
+      const response = await apiFetch("/search/rag", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query, user_id: user?.id }),
+        body: JSON.stringify({ query }),
       });
       if (!response.ok) throw new Error("Error en la búsqueda");
       const data = await response.json();

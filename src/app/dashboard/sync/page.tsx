@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { RefreshCw, CheckCircle2, AlertCircle, Loader2, FolderSync, FileText, Clock, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/apiClient";
 
 export default function SyncPage() {
   const [loading, setLoading] = useState(false);
@@ -18,12 +18,9 @@ export default function SyncPage() {
     setSyncStats(null);
     setDedupStats(null);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const { data: { user } } = await supabase.auth.getUser();
-      const response = await fetch(`${apiUrl}/sync/obsidian`, {
+      const response = await apiFetch("/sync/obsidian", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: user?.id }),
+        body: JSON.stringify({}),
       });
       if (!response.ok) throw new Error("Error al sincronizar");
       const data = await response.json();
@@ -43,12 +40,9 @@ export default function SyncPage() {
     setStatus("idle");
     setDedupStats(null);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const { data: { user } } = await supabase.auth.getUser();
-      const response = await fetch(`${apiUrl}/vault/deduplicate`, {
+      const response = await apiFetch("/vault/deduplicate", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ user_id: user?.id }),
+        body: JSON.stringify({}),
       });
       if (!response.ok) throw new Error("Error al deduplicar");
       const data = await response.json();

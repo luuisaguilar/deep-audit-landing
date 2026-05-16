@@ -9,7 +9,7 @@ import {
   Trash2,
   RefreshCw,
 } from "lucide-react";
-import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/apiClient";
 
 interface Feed {
   id: number | string;
@@ -34,10 +34,7 @@ export default function RssPage() {
   const loadFeeds = async () => {
     setFeedsLoading(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const { data: { user } } = await supabase.auth.getUser();
-      const params = user?.id ? `?user_id=${user.id}` : "";
-      const response = await fetch(`${apiUrl}/rss/feeds${params}`);
+      const response = await apiFetch("/rss/feeds");
       if (!response.ok) throw new Error("no feeds");
       const data = await response.json();
       setFeeds(data || []);
@@ -54,12 +51,9 @@ export default function RssPage() {
     setLoading(true);
     setStatus("idle");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const { data: { user } } = await supabase.auth.getUser();
-      const response = await fetch(`${apiUrl}/rss/add-feed`, {
+      const response = await apiFetch("/rss/add-feed", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, user_id: user?.id }),
+        body: JSON.stringify({ url }),
       });
       if (!response.ok) throw new Error("Error al agregar el feed");
       setStatus("success");
@@ -76,12 +70,9 @@ export default function RssPage() {
 
   const handleRemoveFeed = async (id: number | string) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const { data: { user } } = await supabase.auth.getUser();
-      const response = await fetch(`${apiUrl}/rss/remove-feed`, {
+      const response = await apiFetch("/rss/remove-feed", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id, user_id: user?.id }),
+        body: JSON.stringify({ id }),
       });
       if (!response.ok) throw new Error("Error al eliminar el feed");
       setFeeds(feeds.filter((f) => f.id !== id));
@@ -96,8 +87,7 @@ export default function RssPage() {
   const handleFetchAll = async () => {
     setFetching(true);
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      await fetch(`${apiUrl}/rss/fetch-all`, { method: "POST" });
+      await apiFetch("/rss/fetch-all", { method: "POST", body: JSON.stringify({}) });
       setStatus("success");
       setMessage("Articulos nuevos procesados y guardados en el Vault.");
     } catch {

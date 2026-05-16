@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/apiClient";
 
 interface Ingestion {
   id: number;
@@ -74,12 +75,9 @@ export default function AudioPage() {
     setLoading(true);
     setStatus("idle");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const { data: { user } } = await supabase.auth.getUser();
       const formData = new FormData();
       formData.append("file", file);
-      if (user?.id) formData.append("user_id", user.id);
-      const response = await fetch(`${apiUrl}/analyze/audio`, {
+      const response = await apiFetch("/analyze/audio", {
         method: "POST",
         body: formData,
       });

@@ -8,6 +8,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
+import { apiFetch } from "@/lib/apiClient";
 
 export default function DocGrabPage() {
   const [url, setUrl] = useState("");
@@ -26,12 +27,9 @@ export default function DocGrabPage() {
     addLog(`Initiating connection to DeepAudit-Bridge...`);
 
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "";
-      const { data: { user } } = await supabase.auth.getUser();
-      const response = await fetch(`${apiUrl}/analyze/docgrab`, {
+      const response = await apiFetch("/analyze/docgrab", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ url, depth, user_id: user?.id }),
+        body: JSON.stringify({ url, depth }),
       });
 
       if (!response.ok) throw new Error("Connection failed");
