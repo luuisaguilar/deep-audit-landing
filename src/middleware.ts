@@ -8,7 +8,10 @@ export async function middleware(request: NextRequest) {
   // Si no hay credenciales, dejamos pasar la petición para evitar que la app se rompa
   // Pero avisamos en consola (solo visible en el servidor/terminal)
   if (!supabaseUrl || !supabaseKey) {
-    console.warn("⚠️ Supabase credentials missing. Auth Middleware is inactive.");
+    console.warn("⚠️ Supabase credentials missing. Blocking /dashboard access.");
+    if (request.nextUrl.pathname.startsWith('/dashboard')) {
+      return NextResponse.redirect(new URL('/auth', request.url))
+    }
     return NextResponse.next();
   }
 
